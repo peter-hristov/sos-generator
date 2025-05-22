@@ -1,5 +1,12 @@
 # Build the matrix
-from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify
+from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode
+
+def isInArray(expression, expressionArray):
+    for e in expressionArray:
+        # print(f"comparing {expression} and {e}")
+        if expression == e or -expression == e:
+            return True
+    return False
 
 def orientationTest(p1, p2, p3):
     M = Matrix([
@@ -10,7 +17,6 @@ def orientationTest(p1, p2, p3):
 
     return M.det()
 
-
 def orientationTestHomogenious(p1, p2, p3):
     M = Matrix([
         [p1[0], p1[1], p1[2]],
@@ -20,11 +26,21 @@ def orientationTestHomogenious(p1, p2, p3):
 
     return M.det()
 
+def orientationTestHomogenious4D(p1, p2, p3, p4):
+    M = Matrix([
+        [p1[0], p1[1], p1[2], p1[3]],
+        [p2[0], p2[1], p2[2], p2[3]],
+        [p3[0], p3[1], p3[2], p3[3]],
+        [p4[0], p4[1], p4[2], p4[3]],
+    ])
+
+    return M.det()
+
 def count_indexed_with_base(term, base):
     """Return the number of Indexed objects in a term with the given base."""
     return sum(1 for atom in term.atoms(Indexed) if atom.base == base)
 
-def generate_sequence(varNames, dimensions=(1, 2, 3)):
+def generate_sequence(varNames, dimensions=(1, 2)):
     sequence = []
     # sequence.append([f"e[{varNames[0]}, {dimensions[1]}]", f"e[{varNames[0]}, {dimensions[0]}]"])
 
@@ -54,20 +70,20 @@ def generate_sequence(varNames, dimensions=(1, 2, 3)):
 
     return sequence
 
-def getHomogeniousExpression():
+def dualizeAndOrient():
     # Homogenious
 
     # p_li
-    p_l = (p[l, 0] + e[l, 0], p[l, 1] + e[l, 1])
-    p_i = (p[i, 0] + e[i, 0], p[i, 1] + e[i, 1])
+    p_l = (p[l, 1] + e[l, 1], p[l, 2] + e[l, 2])
+    p_i = (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2])
 
     # p_vj
-    p_v = (p[v, 0] + e[v, 0], p[v, 1] + e[v, 1])
-    p_j = (p[j, 0] + e[j, 0], p[j, 1] + e[j, 1])
+    p_v = (p[v, 1] + e[v, 1], p[v, 2] + e[v, 2])
+    p_j = (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2])
 
     # p_uk
-    p_u = (p[u, 0] + e[u, 0], p[u, 1] + e[u, 1])
-    p_k = (p[k, 0] + e[k, 0], p[k, 1] + e[k, 1])
+    p_u = (p[u, 1] + e[u, 1], p[u, 2] + e[u, 2])
+    p_k = (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2])
 
 
     # p_li homogenious
@@ -94,28 +110,86 @@ def getHomogeniousExpression():
     return orientationTestHomogenious(p_li, p_vj, p_uk)
 
 
+def parametrizeAndOrder():
+
+    # p_l -> p_i
+    r = Matrix([p[i,1] - p[l,1] + e[i,1] - e[l,1], p[i,2] - p[l,2] + e[i,2] - e[l,2]])
+
+    # p_v -> p_j
+    s1 = Matrix([p[j,1] - p[v,1] + e[j,1] - e[v,1], p[j,2] - p[v,2] + e[j,2] - e[v,2]])
+    # p_u -> p_k
+    s2 = Matrix([p[k,1] - p[u,1] + e[k,1] - e[u,1], p[k,2] - p[u,2] + e[k,2] - e[u,2]])
+
+    # p_v -> p_l
+    q1 = Matrix([p[l,1] - p[v,1] + e[l,1] - e[v,1], p[l,2] - p[v,2] + e[l,2] - e[v,2]])
+    # p_u -> p_l
+    q2 = Matrix([p[l,1] - p[u,1] + e[l,1] - e[u,1], p[l,2] - p[u,2] + e[l,2] - e[u,2]])
+
+
+    q1xs1 = Matrix([
+        q1.T.tolist()[0],  # convert row matrix to flat list
+        s1.T.tolist()[0]
+    ]).det()
+
+    q2xs2 = Matrix([
+        q2.T.tolist()[0],  # convert row matrix to flat list
+        s2.T.tolist()[0]
+    ]).det()
+
+    q1xr = Matrix([
+        q1.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0]
+    ]).det()
+
+    q2xr = Matrix([
+        q2.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0]
+    ]).det()
+
+    rxs1 = Matrix([
+        r.T.tolist()[0],  # convert row matrix to flat list
+        s1.T.tolist()[0]
+    ]).det()
+
+    rxs2 = Matrix([
+        r.T.tolist()[0],  # convert row matrix to flat list
+        s2.T.tolist()[0]
+    ]).det()
+
+
+    return expand(q1xs1 * rxs2 - q2xs2 * rxs1)
 
 
 
-p = IndexedBase('p')
-e = IndexedBase('e')
+
+
+
+
+p = IndexedBase('p', shape=(6, 2))
+e = IndexedBase('e', shape=(6, 2))
 
 # Symbolic indices
 variables = symbols('i j k l u v')
 i, j, k, l, u, v = variables
 
+print("Computing initial expression...")
 # Affine
-det = orientationTestHomogenious(
-        (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2], p[i, 3] + e[i, 3]), 
-        (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2], p[j, 3] + e[j, 3]), 
-        (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2], p[k, 3] + e[k, 3])
-        )
+# det = orientationTestHomogenious(
+        # (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2], p[i, 3] + e[i, 3]), 
+        # (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2], p[j, 3] + e[j, 3]), 
+        # (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2], p[k, 3] + e[k, 3])
+        # )
 
-# det = getHomogeniousExpression()
+# det = orientationTestHomogenious4D(
+        # (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2], p[i, 3] + e[i, 3], p[i, 4] + e[i, 4]), 
+        # (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2], p[j, 3] + e[j, 3], p[j, 4] + e[j, 4]), 
+        # (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2], p[k, 3] + e[k, 3], p[k, 4] + e[k, 4]),
+        # (p[l, 1] + e[l, 1], p[l, 2] + e[l, 2], p[l, 3] + e[l, 3], p[l, 4] + e[l, 4])
+        # )
 
-# Optional: collect by e_i1 or any expression
-# det_expanded = expand(det)
-# det_collected = collect(det_expanded, e_i1)
+# det = dualizeAndOrient()
+det = parametrizeAndOrder()
+
 
 expression = simplify(expand(det))
 expressionTermsOrdered = expression.as_ordered_terms()
@@ -123,8 +197,10 @@ expressionTermsOrdered = expression.as_ordered_terms()
 print(f"Total terms {len(expressionTermsOrdered)}")
 
 
+print("Arranging terms into different levels...")
 allTerms = []
-for i in range(0, 100):
+# the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
+for i in range(0, 100000):
     terms = sum([
         t for t in expressionTermsOrdered
         if count_indexed_with_base(t, e) == i
@@ -149,6 +225,9 @@ print(f"We have this many types of mixed expressions {len(allTerms)}")
 def printSosTable():
     print("\n\nHere are all the sequences:")
     depth = 0
+    pExpressions = [allTerms[0]]
+    eExpressions = [[]]
+
     seq = generate_sequence(variables)
     for line in seq:
         for eProduct in line:
@@ -164,6 +243,7 @@ def printSosTable():
             depth+=1
             collected_expr = collect(collectionExpression, collectionTerm).coeff(collectionTerm)
 
+
             # Skip if it's not in the expression
             if not collectionExpression.has(collectionTerm):
                 print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
@@ -176,6 +256,19 @@ def printSosTable():
                 print("------------------------------------- Skipping")
                 continue
 
+            # if collectionExpression in s or (-1 * collectionExpression) in s:
+            # if any(collectionExpression.equals(e) or (-collectionExpression).equals(e) for e in s):
+                # print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
+                # print("------------------------------------- Skipping p-term is already there")
+
+
+            if isInArray(collected_expr, pExpressions):
+                print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
+                print(f"------------------------------------- Skipping {collected_expr} p-term is already there")
+                continue
+
+            pExpressions.append(collected_expr)
+            eExpressions.append(eProduct)
 
             # print(f"\n\nThe current depth is {depth}.")
             # print("The current e-product is:")
@@ -191,7 +284,32 @@ def printSosTable():
             print(simplify(collected_expr))
 
             if (num_factors == len(allTerms) - 1):
-                print("FOUND THE CONSTANT FATOR!!!")
-                return
+                print("FOUND THE CONSTANT FACTOR!!!")
+                return (pExpressions, eExpressions)
 
-printSosTable()
+    return (pExpressions, eExpressions)
+
+pExpressions, eExpressions = printSosTable()
+
+
+print(f"The final depth is {len(pExpressions)}")
+
+for t in range(0, len(pExpressions)):
+    print(f"\n\n-------------------------------------------- At depth {t}")
+    print(f"The p-expression is:")
+    # evaluatedExpression = pExpressions[t].subs({i: 1, j: 2, k: 3, l: 4, u: 5, v: 6})  # Step 1
+    print(f"{ccode(pExpressions[t])}")
+    print(f"The e-expression is:")
+    print(f"{eExpressions[t]}")
+
+
+
+
+# expr3 = expr2.subs({
+    # p[0,1]: 4,
+    # p[1,1]: 5,
+    # p[2,1]: 6,
+    # p[3,1]: 7
+# })  # Step 2
+
+
