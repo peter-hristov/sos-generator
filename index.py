@@ -1,6 +1,30 @@
 # Build the matrix
 from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode
 
+p = IndexedBase('p', shape=(6, 2))
+e = IndexedBase('e', shape=(6, 2))
+
+# Symbolic indices
+variables = symbols('i j k l u v')
+i, j, k, l, u, v = variables
+
+def evaluateExpression(expression, p1, p2, p3, p4, p5, p6):
+    expression_index_subs = expression.subs({i: 0, j: 1, k: 2, l: 3, u: 4, v: 5})
+
+    valueSubs = {
+            p[0, 1]: p1[0], p[0, 2]: p1[1],
+            p[1, 1]: p2[0], p[1, 2]: p2[1],
+            p[2, 1]: p3[0], p[2, 2]: p3[1],
+            p[3, 1]: p4[0], p[3, 2]: p4[1],
+            p[4, 1]: p5[0], p[4, 2]: p5[1],
+            p[5, 1]: p6[0], p[5, 2]: p6[1],
+            }
+
+    expression_value_subs = expression_index_subs.subs(valueSubs)
+
+    return expression_value_subs
+
+
 def isInArray(expression, expressionArray):
     for e in expressionArray:
         # print(f"comparing {expression} and {e}")
@@ -165,15 +189,16 @@ def parametrizeAndOrder():
 
 
 
-p = IndexedBase('p', shape=(6, 2))
-e = IndexedBase('e', shape=(6, 2))
-
-# Symbolic indices
-variables = symbols('i j k l u v')
-i, j, k, l, u, v = variables
 
 print("Computing initial expression...")
 # Affine
+
+# det = orientationTest(
+        # (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2]), 
+        # (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2]), 
+        # (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2])
+        # )
+
 # det = orientationTestHomogenious(
         # (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2], p[i, 3] + e[i, 3]), 
         # (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2], p[j, 3] + e[j, 3]), 
@@ -187,8 +212,8 @@ print("Computing initial expression...")
         # (p[l, 1] + e[l, 1], p[l, 2] + e[l, 2], p[l, 3] + e[l, 3], p[l, 4] + e[l, 4])
         # )
 
-# det = dualizeAndOrient()
-det = parametrizeAndOrder()
+det = dualizeAndOrient()
+# det = parametrizeAndOrder()
 
 
 expression = simplify(expand(det))
@@ -200,10 +225,10 @@ print(f"Total terms {len(expressionTermsOrdered)}")
 print("Arranging terms into different levels...")
 allTerms = []
 # the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
-for i in range(0, 100000):
+for index in range(0, 100000):
     terms = sum([
         t for t in expressionTermsOrdered
-        if count_indexed_with_base(t, e) == i
+        if count_indexed_with_base(t, e) == index
     ])
 
     if (terms == 0):
@@ -216,9 +241,9 @@ for t in expressionTermsOrdered:
     print(t)
 
 print("\n\nHere are all the terms grouped by the number of epsilons:")
-for i in range(0, len(allTerms)):
-    print(i)
-    print(allTerms[i])
+for t in range(0, len(allTerms)):
+    print(t)
+    print(allTerms[t])
 
 print(f"We have this many types of mixed expressions {len(allTerms)}")
 
@@ -290,18 +315,34 @@ def printSosTable():
     return (pExpressions, eExpressions)
 
 pExpressions, eExpressions = printSosTable()
-
-
 print(f"The final depth is {len(pExpressions)}")
+
+# Blue
+pl = (2, 9)
+pi = (9, 2)
+
+# Orange
+pv = (2, 4)
+pj = (10, 6)
+
+# Green
+pu = (4, 2)
+pk = (9, 5)
+
 
 for t in range(0, len(pExpressions)):
     print(f"\n\n-------------------------------------------- At depth {t}")
     print(f"The p-expression is:")
-    # evaluatedExpression = pExpressions[t].subs({i: 1, j: 2, k: 3, l: 4, u: 5, v: 6})  # Step 1
-    print(f"{ccode(pExpressions[t])}")
+    print(f"{(pExpressions[t])}")
+    print(f"The p-expression evaluation is:")
+    pExpressionValue = evaluateExpression(pExpressions[t], pi, pj, pk, pl, pu, pv)
+    print(f"{pExpressionValue}")
     print(f"The e-expression is:")
     print(f"{eExpressions[t]}")
 
+    if (pExpressionValue != 0):
+        print("Reaches an answer.")
+        break
 
 
 
