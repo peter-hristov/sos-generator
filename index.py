@@ -5,9 +5,6 @@ import sys
 
 import methods
 
-
-
-
 # Symbolic indexed bases
 p = IndexedBase('p')
 e = IndexedBase('e')
@@ -34,7 +31,6 @@ pj = (10, 6)
 # Green
 pu = (4, 2)
 pk = (9, 5)
-
 
 print("Computing initial expression...")
 # Affine
