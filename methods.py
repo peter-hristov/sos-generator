@@ -11,7 +11,7 @@ def evaluateExpression(expression, p, variables, indexSubstitution, p1, p2, p3, 
             p[indexSubstitution[k], 1]: p3[0], p[indexSubstitution[k], 2]: p3[1],
             p[indexSubstitution[l], 1]: p4[0], p[indexSubstitution[l], 2]: p4[1],
             p[indexSubstitution[u], 1]: p5[0], p[indexSubstitution[u], 2]: p5[1],
-            p[indexSubstitution[k], 1]: p6[0], p[indexSubstitution[k], 2]: p6[1],
+            p[indexSubstitution[v], 1]: p6[0], p[indexSubstitution[v], 2]: p6[1],
             }
 
     expression_value_subs = expression.subs(valueSubs)
@@ -60,12 +60,12 @@ def dualizeAndOrient(p, e, variables):
     i, j, k, l, u, v = variables
 
     # p_li
+    p_l = (p[l, 1] + e[l, 1], p[l, 2] + e[l, 2])
     p_i = (p[i, 1] + e[i, 1], p[i, 2] + e[i, 2])
-    p_j = (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2])
 
     # p_vj
-    p_k = (p[k, 1] + e[k, 1], p[k, 2] + e[k, 2])
-    p_l = (p[l, 1] + e[l, 1], p[l, 2] + e[l, 2])
+    p_v = (p[v, 1] + e[v, 1], p[v, 2] + e[v, 2])
+    p_j = (p[j, 1] + e[j, 1], p[j, 2] + e[j, 2])
 
     # p_uk
     p_u = (p[u, 1] + e[u, 1], p[u, 2] + e[u, 2])
@@ -73,17 +73,17 @@ def dualizeAndOrient(p, e, variables):
 
 
     # p_li homogenious
-    p_ij = (
-        p_i[1] - p_j[1],
-        p_j[0] - p_i[0],
-        p_i[0] * p_j[1] - p_i[1] * p_j[0]
+    p_li = (
+        p_l[1] - p_i[1],
+        p_i[0] - p_l[0],
+        p_l[0] * p_i[1] - p_l[1] * p_i[0]
     )
 
     # p_vj homogenious
-    p_kl = (
-        p_k[1] - p_l[1],
-        p_l[0] - p_k[0],
-        p_k[0] * p_l[1] - p_k[1] * p_l[0]
+    p_vj = (
+        p_v[1] - p_j[1],
+        p_j[0] - p_v[0],
+        p_v[0] * p_j[1] - p_v[1] * p_j[0]
     )
 
     # p_uk
@@ -93,27 +93,25 @@ def dualizeAndOrient(p, e, variables):
         p_u[0] * p_k[1] - p_u[1] * p_k[0]
     )
 
-    return orientationTestHomogenious(p, p_ij, p_kl, p_uk)
+    return orientationTestHomogenious(p, p_li, p_vj, p_uk)
 
 
 def parametrizeAndOrder(p, e, variables):
 
     i, j, k, l, u, v = variables
 
-    # p_i -> p_j
-    r = Matrix([p[j,1] - p[i,1] + e[j,1] - e[i,1], p[j,2] - p[i,2] + e[j,2] - e[i,2]])
+    # p_l -> p_i
+    r = Matrix([p[i,1] - p[l,1] + e[i,1] - e[l,1], p[i,2] - p[l,2] + e[i,2] - e[l,2]])
 
-    # p_k -> p_l
-    s1 = Matrix([p[k,1] - p[l,1] + e[k,1] - e[l,1], p[k,2] - p[l,2] + e[k,2] - e[l,2]])
-
+    # p_v -> p_j
+    s1 = Matrix([p[j,1] - p[v,1] + e[j,1] - e[v,1], p[j,2] - p[v,2] + e[j,2] - e[v,2]])
     # p_u -> p_k
     s2 = Matrix([p[k,1] - p[u,1] + e[k,1] - e[u,1], p[k,2] - p[u,2] + e[k,2] - e[u,2]])
 
-    # p_k -> p_i
-    q1 = Matrix([p[i,1] - p[k,1] + e[i,1] - e[k,1], p[i,2] - p[k,2] + e[i,2] - e[k,2]])
-
-    # p_u -> p_i
-    q2 = Matrix([p[i,1] - p[u,1] + e[i,1] - e[u,1], p[i,2] - p[u,2] + e[i,2] - e[u,2]])
+    # p_v -> p_l
+    q1 = Matrix([p[l,1] - p[v,1] + e[l,1] - e[v,1], p[l,2] - p[v,2] + e[l,2] - e[v,2]])
+    # p_u -> p_l
+    q2 = Matrix([p[l,1] - p[u,1] + e[l,1] - e[u,1], p[l,2] - p[u,2] + e[l,2] - e[u,2]])
 
 
     q1xs1 = Matrix([
