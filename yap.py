@@ -1,15 +1,15 @@
-# Build the matrix
-from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
+import sympy
 from collections import defaultdict
 import time
 import sys
-import matplotlib.pyplot as plt
+from sympy import symbols, diff, IndexedBase, latex, sign
 
 import methods
 import schemes
 
-if len(sys.argv) != 2:
-    print("Usage: python your_script.py <num_iterations>")
+
+if len(sys.argv) != 3:
+    print("Usage: python your_script.py <num_iterations> <ordering type \in {'lex', 'total'}")
     sys.exit(1)
 
 try:
@@ -18,21 +18,8 @@ except ValueError:
     print("Invalid input: must be an integer")
     sys.exit(1)
 
-# Symbolic indexed bases
-p = IndexedBase('p')
-e = IndexedBase('e')
+orderingType = sys.arv[2]
 
-# Symbolic variables for the indices
-variables = symbols("i j k l u v")
-i, j, k, l, u, v = variables
-
-# I'm not using this much any more, it used to be used to subs
-# indexSubstitution = {i: 0, j: 1, k: 2, l: 3, u: 4, v: 5}
-
-# Compute the evaluation table
-pExpressions, eExpressions = schemes.getEvaluationTableSos(p, e, variables)
-
-# Substitute with some symbols so that we can evalute this later efficiently
 pl1, pl2 = symbols("pl1, pl2")
 pi1, pi2 = symbols("pi1, pi2")
 pv1, pv2 = symbols("pv1, pv2")
@@ -40,24 +27,7 @@ pj1, pj2 = symbols("pj1, pj2")
 pu1, pu2 = symbols("pu1, pu2")
 pk1, pk2 = symbols("pk1, pk2")
 
-# Replace the indexed base with symbols which can be evaluated
-replacements = {
-    p[l, 1]: pl1,
-    p[l, 2]: pl2,
-    p[i, 1]: pi1,
-    p[i, 2]: pi2,
-    p[v, 1]: pv1,
-    p[v, 2]: pv2,
-    p[j, 1]: pj1,
-    p[j, 2]: pj2,
-    p[u, 1]: pu1,
-    p[u, 2]: pu2,
-    p[k, 1]: pk1,
-    p[k, 2]: pk2,
-}
-
-pExpressions_substituted = [expr.subs(replacements) for expr in pExpressions]
-
+pExpressions, eExpressions = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, orderingType)
 
 signs = []
 depths = []
@@ -65,20 +35,7 @@ depthsHistogram = defaultdict(int)
 
 for iteration in range(1, n):
 
-    start = time.time()
-
     print(f"---------------------------------------------------------- At iteration {iteration}")
-    # Blue
-    # pl = generateRandomRationalCirclePoint()
-    # pi = (-pl[0], -pl[1])
-
-    # # Orange
-    # pv = generateRandomRationalCirclePoint()
-    # pj = (-pv[0], -pv[1])
-
-    # # Green
-    # pu = generateRandomRationalCirclePoint()
-    # pk = (-pu[0], -pu[1])
 
     pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
 
@@ -91,20 +48,27 @@ for iteration in range(1, n):
         pk1: pk[0], pk2: pk[1],
         }
 
+    # print("The input points are:")
+    # print(f"pl = {pl}")
+    # print(f"pi = {pi}")
+    # print(f"pv = {pv}")
+    # print(f"pj = {pj}")
+    # print(f"pu = {pu}")
+    # print(f"pk = {pk}")
 
     expressionSign = 0
 
     # Evaluate on sign on our input
+    start = time.time()
     depth = -1
 
-    for index in range(len(pExpressions_substituted)):
-        pExpression = pExpressions_substituted[index]
+    for index in range(len(pExpressions)):
+        pExpression = pExpressions[index]
         eExpression = eExpressions[index]
 
 
         expressionSign = sign(pExpression.subs(subs_dict).evalf())
         depth += 1
-
         # print(f"-------------------------------------------- Derivative order {eExpression}:")
         # # print(f"{deriv}")
         # print(f"Depth {depth}")
@@ -114,19 +78,7 @@ for iteration in range(1, n):
         if expressionSign != 0:
             break
 
-
-    # print("The input points are:")
-    # print(f"pl = {pl}")
-    # print(f"pi = {pi}")
-    # print(f"pv = {pv}")
-    # print(f"pj = {pj}")
-    # print(f"pu = {pu}")
-    # print(f"pk = {pk}")
-
-    # Evaluate on sign on our input
-    # start = time.time()
-    # expressionSign, depth = methods.evaluateExpresisonSign(pExpressions, eExpressions, p, variables, indexSubstitution, pl, pi, pv, pj, pu, pk)
-    # end = time.time()
+    end = time.time()
 
     # assert depth > 0
 
@@ -134,9 +86,8 @@ for iteration in range(1, n):
     depths.append(depth)
     depthsHistogram[depth]+=1
 
-    end = time.time()
-    print(f"The final sign is {expressionSign} at depth {depth}")
     print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
+    print(f"The final sign is {expressionSign} at depth {depth}")
 
 # After the loop
 n = len(depths)

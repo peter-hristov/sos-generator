@@ -1,0 +1,53 @@
+
+------------------------------------------------------------------- Yap Lex
+Here are the depth stats for Yap Lex
+Average: 1.001
+Max: 14.000
+Standard deviation: 0.040
+
+Here are the operations stats for Yap Lex
+Average: 215.056
+Max: 578.000
+Standard deviation: 1.936
+
+Here's the histogram:
+Depth: 1, count: 999034
+Depth: 2, count: 955
+Depth: 14, count: 2
+Depth: 7, count: 9
+
+
+------------------------------------------------------------------- Yap Total
+Here are the depth stats for Yap Total
+Average: 1.001
+Max: 6.000
+Standard deviation: 0.034
+
+Here are the operations stats for Yap Total
+Average: 215.055
+Max: 490.000
+Standard deviation: 1.864
+
+Here's the histogram:
+Depth: 1, count: 999034
+Depth: 2, count: 955
+Depth: 6, count: 2
+Depth: 5, count: 9
+
+
+------------------------------------------------------------------- Sos
+Here are the depth stats for SoS
+Average: 1.001
+Max: 6.000
+Standard deviation: 0.033
+
+Here are the operations stats for SoS
+Average: 215.058
+Max: 403.000
+Standard deviation: 1.815
+
+Here's the histogram:
+Depth: 1, count: 998954
+Depth: 2, count: 1034
+Depth: 3, count: 11
+Depth: 6, count: 1
