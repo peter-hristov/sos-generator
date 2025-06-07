@@ -168,6 +168,54 @@ def orientationTestYap(p1, p2, p3):
 
     return M.det()
 
+
+def parametrizeAndOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+
+    # p_l -> p_i
+    r = Matrix([pi1 - pl1, pi2 - pl2])
+
+    # p_v -> p_j
+    s1 = Matrix([pj1 - pv1, pj2 - pv2])
+    s2 = Matrix([pk1 - pu1, pk2 - pu2])
+
+    q1 = Matrix([pl1 - pv1, pl2 - pv2])
+    q2 = Matrix([pl1 - pu1, pl2 - pu2])
+
+    q1xs1 = Matrix([
+        q1.T.tolist()[0],  # convert row matrix to flat list
+        s1.T.tolist()[0]
+    ]).det()
+
+    q2xs2 = Matrix([
+        q2.T.tolist()[0],  # convert row matrix to flat list
+        s2.T.tolist()[0]
+    ]).det()
+
+    q1xr = Matrix([
+        q1.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0]
+    ]).det()
+
+    q2xr = Matrix([
+        q2.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0]
+    ]).det()
+
+    rxs1 = Matrix([
+        r.T.tolist()[0],  # convert row matrix to flat list
+        s1.T.tolist()[0]
+    ]).det()
+
+    rxs2 = Matrix([
+        r.T.tolist()[0],  # convert row matrix to flat list
+        s2.T.tolist()[0]
+    ]).det()
+
+
+    return expand(q1xs1 * rxs2 - q2xs2 * rxs1)
+
+
+
 def dualizeAndOrientYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
     # p_li
     p_l = (pl1, pl2)

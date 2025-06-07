@@ -10,6 +10,26 @@
 #include "./utility/CLI11.hpp"
 
 
+
+struct LineLess {
+    bool operator()(const Line_2& l1, const Line_2& l2) const {
+        auto a1 = l1.a();
+        auto b1 = l1.b();
+        auto c1 = l1.c();
+
+        auto a2 = l2.a();
+        auto b2 = l2.b();
+        auto c2 = l2.c();
+
+        if (a1 < a2) return true;
+        if (a2 < a1) return false;
+        if (b1 < b2) return true;
+        if (b2 < b1) return false;
+        return c1 < c2;
+    }
+};
+
+
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -74,6 +94,31 @@ size_t computeDegenerateIntersectionsBruteForce(const vector<Segment_2> &segment
     }
 
     return concurrentSegments;
+}
+
+
+pair<size_t, size_t> computeCollienarPoints(const vector<Point_2> &points)
+{
+    int collinearPoints = 0;
+    std::set<Line_2, LineLess> unique_lines; 
+    for (int i = 0; i < points.size(); ++i) 
+    {
+        for (int j = i + 1; j < points.size(); ++j) 
+        {
+            Line_2 line(points[i], points[j]);
+
+            if (unique_lines.contains(line))
+            {
+                collinearPoints++;
+            }
+            else
+            {
+                unique_lines.insert(line);
+            }
+        }
+    }
+
+    return {collinearPoints, unique_lines.size()};
 }
 
 pair<size_t, size_t> computeDegenerateIntersections(const vector<Segment_2> &segments)
@@ -238,6 +283,9 @@ int main(int argc, char* argv[])
 
     const auto [points, segments] = computePointsAndIndices(data);
 
+    printf("There are %ld points and %ld segments.\n", points.size(), segments.size());
+    //return 0;
+
 
     Timer::start();
     cout << "Computing repeated vertices..." << endl;
@@ -248,6 +296,26 @@ int main(int argc, char* argv[])
     cout << "Computing degenerate intersections..." << endl;
     auto [intersectionPoints, degenerateIntesectionPoints] = computeDegenerateIntersections(segments);
     Timer::stop("Computed degenerate intersections      :");
+
+
+
+
+
+
+    Timer::start();
+    cout << "Computing collinear points..." << endl;
+    auto [collinearPoints, uniqueLines] = computeDegenerateIntersections(segments);
+    Timer::stop("Computed collinear points              :");
+
+
+
+
+
+
+
+
+
+
 
     //Timer::start();
     //size_t concurrentSegmentsBruteForce = computeDegenerateIntersectionsBruteForce(segments);
@@ -263,11 +331,12 @@ int main(int argc, char* argv[])
     printf("There are %ld points and %ld segments and %ld intersection points.\n", points.size(), segments.size(), intersectionPoints);
     //printf("The arrangement has %ld vertices, %ld edges and %ld faces.\n\n", arr.number_of_vertices(), arr.number_of_edges(), arr.number_of_faces());
     printf("There are %ld repeated vertices out of %ld.\n", repeatedVertices, points.size());
+    printf("There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
     printf("There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
     //printf("There are %ld concurrent segments.\n", concurrentSegmentsBruteForce);
 
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
+    std::cout << "Press Enter to continue...";
+    std::cin.get();
 
     return 0;
 }

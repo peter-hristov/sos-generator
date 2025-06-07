@@ -68,6 +68,10 @@ pk1, pk2 = symbols("pk1, pk2")
 print("Computing tables for Yap Lex")
 pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "lex")
 
+print(pExpressionsYapLex[0])
+
+exit()
+
 print("Computing tables for Yap Total")
 pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "total")
 
