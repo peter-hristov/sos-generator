@@ -335,8 +335,8 @@ int main(int argc, char* argv[])
     printf("There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
     //printf("There are %ld concurrent segments.\n", concurrentSegmentsBruteForce);
 
-    std::cout << "Press Enter to continue...";
-    std::cin.get();
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();
 
     return 0;
 }
