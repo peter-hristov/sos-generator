@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
     {
         Timer::start();
         cout << "Computing collinear points..." << endl;
-        auto [collinearPoints, uniqueLines] = computeDegenerateIntersections(segments);
+        auto [collinearPoints, uniqueLines] = computeCollienarPoints(points);
         Timer::stop("Computed collinear points              :");
         printf("------------------------------------------------------------------------There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
     }
