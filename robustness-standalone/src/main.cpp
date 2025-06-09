@@ -253,6 +253,19 @@ int main(int argc, char* argv[])
     string filename;
     cliApp.add_option("--file, -f", filename, "Input data filename. Has to be either .txt of .vti.")->required();
 
+
+    bool runRepeatedPoints = false;
+    cliApp.add_flag("--repeated-points, -r", runRepeatedPoints, "Only compute the number of repeated vertices.");
+
+    bool runCollinearPoints = false;
+    cliApp.add_flag("--collinear-points, -c", runCollinearPoints, "Only compute the number of collinear points.");
+
+    bool runConcurrentSegments = false;
+    cliApp.add_flag("--concurrent-segments, -s", runConcurrentSegments, "Only compute the number of concurrent segments.");
+
+    bool runAll = false;
+    cliApp.add_flag("--all, -a", runAll, "Compute everything.");
+
     CLI11_PARSE(cliApp, argc, argv);
 
     fs::path filePath(filename);
@@ -286,36 +299,32 @@ int main(int argc, char* argv[])
     printf("There are %ld points and %ld segments.\n", points.size(), segments.size());
     //return 0;
 
+    if (true == runAll || true == runRepeatedPoints)
+    {
+        Timer::start();
+        cout << "Computing repeated vertices..." << endl;
+        size_t repeatedVertices = computeRepeatedVertices(points);
+        Timer::stop("Computed repeated vertices             :");
+        printf("------------------------------------------------------------------------There are %ld repeated vertices out of %ld.\n", repeatedVertices, points.size());
+    }
 
-    Timer::start();
-    cout << "Computing repeated vertices..." << endl;
-    size_t repeatedVertices = computeRepeatedVertices(points);
-    Timer::stop("Computed repeated vertices             :");
+    if (true == runAll || true == runCollinearPoints)
+    {
+        Timer::start();
+        cout << "Computing collinear points..." << endl;
+        auto [collinearPoints, uniqueLines] = computeDegenerateIntersections(segments);
+        Timer::stop("Computed collinear points              :");
+        printf("------------------------------------------------------------------------There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
+    }
 
-    Timer::start();
-    cout << "Computing degenerate intersections..." << endl;
-    auto [intersectionPoints, degenerateIntesectionPoints] = computeDegenerateIntersections(segments);
-    Timer::stop("Computed degenerate intersections      :");
-
-
-
-
-
-
-    Timer::start();
-    cout << "Computing collinear points..." << endl;
-    auto [collinearPoints, uniqueLines] = computeDegenerateIntersections(segments);
-    Timer::stop("Computed collinear points              :");
-
-
-
-
-
-
-
-
-
-
+    if (true == runAll || true == runConcurrentSegments)
+    {
+        Timer::start();
+        cout << "Computing degenerate intersections..." << endl;
+        auto [intersectionPoints, degenerateIntesectionPoints] = computeDegenerateIntersections(segments);
+        Timer::stop("Computed degenerate intersections      :");
+        printf("------------------------------------------------------------------------There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
+    }
 
     //Timer::start();
     //size_t concurrentSegmentsBruteForce = computeDegenerateIntersectionsBruteForce(segments);
@@ -327,12 +336,9 @@ int main(int argc, char* argv[])
     //CGAL::insert(arr, segments.begin(), segments.end());
     //Timer::stop("Computed arrangement                   :");
 
-    cout << endl;
-    printf("There are %ld points and %ld segments and %ld intersection points.\n", points.size(), segments.size(), intersectionPoints);
+    //cout << endl;
+    //printf("There are %ld points and %ld segments and %ld intersection points.\n", points.size(), segments.size(), intersectionPoints);
     //printf("The arrangement has %ld vertices, %ld edges and %ld faces.\n\n", arr.number_of_vertices(), arr.number_of_edges(), arr.number_of_faces());
-    printf("There are %ld repeated vertices out of %ld.\n", repeatedVertices, points.size());
-    printf("There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
-    printf("There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
     //printf("There are %ld concurrent segments.\n", concurrentSegmentsBruteForce);
 
     //std::cout << "Press Enter to continue...";
