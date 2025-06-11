@@ -2,7 +2,9 @@
 #include <set>
 #include <filesystem>
 #include <unordered_map>
+#include <random>
 #include <omp.h>
+#include <boost/multiprecision/cpp_int.hpp>
 
 #include "./CGALTypedefs.h"
 #include "./Timer.h"
@@ -32,6 +34,183 @@ struct LineLess {
 
 using namespace std;
 namespace fs = std::filesystem;
+
+
+bool canSegmentsIntersect(const Segment_2& s1, const Segment_2& s2) 
+{
+    // If the bounding boxes don't intersect, skip
+    if (false == CGAL::do_overlap(s1.bbox(), s2.bbox()))
+    {
+        return false;
+    }
+
+    // If they intersect at their endpoints, skip
+    if (s1.source() == s2.source() || s1.source() == s2.target() || s1.target() == s2.source() || s1.target() == s2.target())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool doSegmentsIntersect(const Segment_2& si, const Segment_2& sj, const Segment_2& sk)
+{
+    if (!canSegmentsIntersect(si, sj) || !canSegmentsIntersect(sj, sk) || !canSegmentsIntersect(si, sk))
+    {
+        return false;
+    }
+
+    auto i1 = CGAL::intersection(si, sj);
+
+    // If there is no intersection just continue
+    if (!i1) 
+    { 
+        return false; 
+    }
+
+    auto i2 = CGAL::intersection(sj, sk);
+
+    // If there is no intersection just continue
+    if (!i2) 
+    { 
+        return false; 
+    }
+
+    auto i3 = CGAL::intersection(si, sk);
+
+    if (!i3) 
+    { 
+        return false; 
+    }
+
+    auto p1 = std::get_if<Point_2>(&*i1);
+    auto p2 = std::get_if<Point_2>(&*i2);
+    auto p3 = std::get_if<Point_2>(&*i3);
+
+    if (p1 && p2 && p3 && *p1 == *p2 && *p2 == *p3) 
+    {
+        return true;
+    }
+
+    return false;
+
+}
+
+long long computeConcurrentSegmentsRandom(const std::vector<Segment_2>& segments, const size_t numberOfSamples)
+{
+    long long  n = segments.size();
+    if (n < 3) return 0;
+
+    long long  concurrentCount = 0;
+
+    // Parallel region
+    #pragma omp parallel
+    {
+        // Each thread gets its own RNG seeded differently
+        std::mt19937 rng;
+        {
+            auto seed = std::chrono::steady_clock::now().time_since_epoch().count();
+            // Use thread num to diversify seeds
+            rng.seed(seed + omp_get_thread_num());
+        }
+        std::uniform_int_distribution<long long > dist(0, n - 1);
+
+        long long  localCount = 0;
+
+        #pragma omp for
+        for (long long  sample = 0; sample < numberOfSamples; ++sample)
+        {
+            // Sample unordered tripplet
+            long long  i, j, k;
+            do { i = dist(rng); } while (false);
+            do { j = dist(rng); } while (j == i);
+            do { k = dist(rng); } while (k == i || k == j);
+
+            if (j < i) std::swap(i, j);
+            if (k < j) std::swap(j, k);
+            if (j < i) std::swap(i, j);
+
+            const Segment_2 &si = segments[i];
+            const Segment_2 &sj = segments[j];
+            const Segment_2 &sk = segments[k];
+
+
+            if (doSegmentsIntersect(si, sj, sk))
+            {
+                ++localCount;
+            }
+        }
+
+        // Reduce local counts into global count atomically
+        #pragma omp atomic
+        concurrentCount += localCount;
+    }
+
+    return concurrentCount;
+}
+
+long long  computeCollinearPointsRandom(const std::vector<Point_2> &points, const size_t numberOfSamples)
+{
+    long long  n = points.size();
+    if (n < 3) return 0;
+
+    long long  collinearCount = 0;
+
+    // Parallel region
+    #pragma omp parallel
+    {
+        // Each thread gets its own RNG seeded differently
+        std::mt19937 rng;
+        {
+            auto seed = std::chrono::steady_clock::now().time_since_epoch().count();
+            // Use thread num to diversify seeds
+            rng.seed(seed + omp_get_thread_num());
+        }
+        std::uniform_int_distribution<long long > dist(0, n - 1);
+
+        long long  localCount = 0;
+
+        #pragma omp for
+        for (long long  sample = 0; sample < numberOfSamples; ++sample)
+        {
+            // Sample unordered tripplet
+            long long  i, j, k;
+            do { i = dist(rng); } while (false);
+            do { j = dist(rng); } while (j == i);
+            do { k = dist(rng); } while (k == i || k == j);
+
+            if (j < i) std::swap(i, j);
+            if (k < j) std::swap(j, k);
+            if (j < i) std::swap(i, j);
+
+            const Point_2 &A = points[i];
+            const Point_2 &B = points[j];
+            const Point_2 &C = points[k];
+
+            if (CGAL::orientation(A, B, C) == CGAL::COLLINEAR)
+            {
+                ++localCount;
+            }
+        }
+
+        // Reduce local counts into global count atomically
+        #pragma omp atomic
+        collinearCount += localCount;
+    }
+
+    return collinearCount;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 size_t computeDegenerateIntersectionsBruteForce(const vector<Segment_2> &segments)
 {
@@ -96,11 +275,39 @@ size_t computeDegenerateIntersectionsBruteForce(const vector<Segment_2> &segment
     return concurrentSegments;
 }
 
-
-pair<size_t, size_t> computeCollienarPoints(const vector<Point_2> &points)
+pair<size_t, size_t> computeCollinearPointsBruteForce(const vector<Point_2>& points)
 {
-    int collinearPoints = 0;
+    set<Point_2> collinearPoints;
+    const size_t n = points.size();
+
+    for (size_t i = 0; i < n; ++i)
+    {
+        cout << i << " / " << n << endl;
+        for (size_t j = i + 1; j < n; ++j)
+        {
+            for (size_t k = j + 1; k < n; ++k)
+            {
+                if (CGAL::collinear(points[i], points[j], points[k]))
+                {
+                    collinearPoints.insert(points[i]);
+                    collinearPoints.insert(points[j]);
+                    collinearPoints.insert(points[k]);
+                }
+            }
+        }
+    }
+
+
+    return {collinearPoints.size(), -1};
+}
+
+
+pair<size_t, size_t> computeCollinearPoints(const vector<Point_2> &points)
+{
+    //int collinearPoints = 0;
     std::set<Line_2, LineLess> unique_lines; 
+    std::set<Point_2> collinearPoints;
+
     for (int i = 0; i < points.size(); ++i) 
     {
         for (int j = i + 1; j < points.size(); ++j) 
@@ -109,7 +316,9 @@ pair<size_t, size_t> computeCollienarPoints(const vector<Point_2> &points)
 
             if (unique_lines.contains(line))
             {
-                collinearPoints++;
+                //collinearPoints++;
+                collinearPoints.insert(points[i]);
+                collinearPoints.insert(points[j]);
             }
             else
             {
@@ -118,8 +327,9 @@ pair<size_t, size_t> computeCollienarPoints(const vector<Point_2> &points)
         }
     }
 
-    return {collinearPoints, unique_lines.size()};
+    return {collinearPoints.size(), unique_lines.size()};
 }
+
 
 pair<size_t, size_t> computeDegenerateIntersections(const vector<Segment_2> &segments)
 {
@@ -258,13 +468,16 @@ int main(int argc, char* argv[])
     cliApp.add_flag("--repeated-points, -r", runRepeatedPoints, "Only compute the number of repeated vertices.");
 
     bool runCollinearPoints = false;
-    cliApp.add_flag("--collinear-points, -c", runCollinearPoints, "Only compute the number of collinear points.");
+    cliApp.add_flag("--collinear-points, -p", runCollinearPoints, "Only compute the number of collinear points.");
 
     bool runConcurrentSegments = false;
     cliApp.add_flag("--concurrent-segments, -s", runConcurrentSegments, "Only compute the number of concurrent segments.");
 
     bool runAll = false;
     cliApp.add_flag("--all, -a", runAll, "Compute everything.");
+
+    long long numberOfSamples = -1;
+    cliApp.add_option("--number-Samples, -n", numberOfSamples, "Compute everything.");
 
     CLI11_PARSE(cliApp, argc, argv);
 
@@ -279,6 +492,8 @@ int main(int argc, char* argv[])
     // Set up the data class
     Data* data = new Data();
 
+    printf("Reading data...\n");
+    Timer::start();
     std::string extension = filePath.extension().string();
     if (extension == ".vtu") 
     {
@@ -292,15 +507,23 @@ int main(int argc, char* argv[])
     {
         std::cerr << "Error: Unsupported file type: " << extension << std::endl;
     }
+    Timer::stop("Read data                              :");
 
-
+    printf("Computing points and segments...\n");
+    Timer::start();
     const auto [points, segments] = computePointsAndIndices(data);
+    Timer::stop("Computed points and segments             :");
 
-    printf("There are %ld points and %ld segments.\n", points.size(), segments.size());
+    // Triplles of over a miliion will overflow long long 
+    const boost::multiprecision::uint128_t numberOfPointTripplets = points.size() * (points.size() - 1) * (points.size() - 2) / 6;
+    const boost::multiprecision::uint128_t numberOfSegmentTripplets = segments.size() * (segments.size() - 1) * (segments.size() - 2) / 6;
+
+    printf("There are %ld points and %ld segments in dataset %s.\n", points.size(), segments.size(), filename.c_str());
     //return 0;
 
     if (true == runAll || true == runRepeatedPoints)
     {
+        printf("Computing duplicated pints...\n");
         Timer::start();
         cout << "Computing repeated vertices..." << endl;
         size_t repeatedVertices = computeRepeatedVertices(points);
@@ -310,39 +533,44 @@ int main(int argc, char* argv[])
 
     if (true == runAll || true == runCollinearPoints)
     {
-        Timer::start();
-        cout << "Computing collinear points..." << endl;
-        auto [collinearPoints, uniqueLines] = computeCollienarPoints(points);
-        Timer::stop("Computed collinear points              :");
-        printf("------------------------------------------------------------------------There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
+        printf("Computing collinear pints...\n");
+        if (numberOfSamples != -1)
+        {
+            Timer::start();
+            long long  collinearPoints =  computeCollinearPointsRandom(points, numberOfSamples);
+            Timer::stop("Computed collinear points              :");
+            printf("------------------------------------------------------------------------There are %lld collinear points from %lld samples and %s tripplets.\n", collinearPoints, numberOfSamples, numberOfPointTripplets.str().c_str());
+        }
+        else
+        {
+            Timer::start();
+            cout << "Computing collinear points..." << endl;
+            auto [collinearPoints, uniqueLines] = computeCollinearPoints(points);
+            Timer::stop("Computed collinear points              :");
+            printf("------------------------------------------------------------------------There are %ld collinear points and this many unique lines %ld.\n", collinearPoints, uniqueLines);
+
+        }
     }
 
     if (true == runAll || true == runConcurrentSegments)
     {
-        Timer::start();
-        cout << "Computing degenerate intersections..." << endl;
-        auto [intersectionPoints, degenerateIntesectionPoints] = computeDegenerateIntersections(segments);
-        Timer::stop("Computed degenerate intersections      :");
-        printf("------------------------------------------------------------------------There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
+        printf("Computing concurrent segments...\n");
+        if (numberOfSamples != -1)
+        {
+            Timer::start();
+            long long  concurrentSegments =  computeConcurrentSegmentsRandom(segments, numberOfSamples);
+            Timer::stop("Computed collinear points              :");
+            printf("------------------------------------------------------------------------There are %lld concurrent segments from %lld samples and %s tripplets.\n", concurrentSegments, numberOfSamples, numberOfSegmentTripplets.str().c_str());
+        }
+        else
+        {
+            Timer::start();
+            cout << "Computing degenerate intersections..." << endl;
+            auto [intersectionPoints, degenerateIntesectionPoints] = computeDegenerateIntersections(segments);
+            Timer::stop("Computed degenerate intersections      :");
+            printf("------------------------------------------------------------------------There are %ld degenerate intersections out of %ld.\n", degenerateIntesectionPoints, intersectionPoints);
+        }
     }
-
-    //Timer::start();
-    //size_t concurrentSegmentsBruteForce = computeDegenerateIntersectionsBruteForce(segments);
-    //Timer::stop("Computed concurrent segments           :");
-
-
-    //Timer::start();
-    //Arrangement_2 arr;
-    //CGAL::insert(arr, segments.begin(), segments.end());
-    //Timer::stop("Computed arrangement                   :");
-
-    //cout << endl;
-    //printf("There are %ld points and %ld segments and %ld intersection points.\n", points.size(), segments.size(), intersectionPoints);
-    //printf("The arrangement has %ld vertices, %ld edges and %ld faces.\n\n", arr.number_of_vertices(), arr.number_of_edges(), arr.number_of_faces());
-    //printf("There are %ld concurrent segments.\n", concurrentSegmentsBruteForce);
-
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();
 
     return 0;
 }

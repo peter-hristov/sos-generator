@@ -226,3 +226,20 @@ Abstract Fiber surface (distance functions over other things)
 # Notes on Optimisation
     Skipping empty triangles gave a 0.9s speedup.
     Went from 0.9s to 2.6s when we go from 0 triangles to 1,587,894 triangles.
+
+
+
+
+
+
+sbatch \
+--time=2:00:00 \
+--nodes=1 \
+--ntasks=1 \
+--cpus-per-task=32 \
+--mem=120G \
+--wrap="./bin/fv99 -f ./data/ethane-diole/downsample-2-384800.vtu -c"
+
+
+
+

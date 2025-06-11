@@ -114,6 +114,9 @@ void Data::printMesh()
         printf("%d - (%ld, %ld, %ld, %ld)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
     }
 }
+
+
+
 void Data::readDataVTU(const string &filename, const float &perturbationEpsilon)
 {
     // Read the VTU file
@@ -174,6 +177,22 @@ void Data::readDataVTU(const string &filename, const float &perturbationEpsilon)
 
     vtkDataArray* fDataArray = pointData->GetArray(1);
     vtkDataArray* gDataArray = pointData->GetArray(0);
+
+    //int numArrays = pointData->GetNumberOfArrays();
+
+    //for (int i = 0; i < numArrays; i++) {
+        //vtkDataArray* array = pointData->GetArray(i);
+        //const char* name = array->GetName();
+        //int numComponents = array->GetNumberOfComponents();
+
+        //std::cout << "Array " << i << ": name = " 
+            //<< (name ? name : "null") 
+            //<< ", components = " << numComponents << std::endl;
+    //}
+
+
+    //std::cout << "Name of fDataArray: " << (fDataArray->GetName() ? fDataArray->GetName() : "null") << std::endl;
+    //std::cout << "Name of gDataArray: " << (gDataArray->GetName() ? gDataArray->GetName() : "null") << std::endl;
 
     assert(fDataArray->GetNumberOfTuples() == numVertices);
     assert(gDataArray->GetNumberOfTuples() == numVertices);
