@@ -18,7 +18,7 @@ except ValueError:
     print("Invalid input: must be an integer")
     sys.exit(1)
 
-orderingType = sys.arv[2]
+orderingType = sys.argv[2]
 
 pl1, pl2 = symbols("pl1, pl2")
 pi1, pi2 = symbols("pi1, pi2")
@@ -28,6 +28,9 @@ pu1, pu2 = symbols("pu1, pu2")
 pk1, pk2 = symbols("pk1, pk2")
 
 pExpressions, eExpressions = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, orderingType)
+
+print(pExpressions[0])
+exit()
 
 signs = []
 depths = []

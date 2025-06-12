@@ -142,19 +142,19 @@ for iteration in range(0, n):
     # Generate concurrent points
     pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
 
-    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
     signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
 
-    signsYapL.append(signYapL)
-    depthsYapL.append(depthYapL)
-    operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
-    depthsHistogramYapL[depthYapL]+=1
+    # signsYapL.append(signYapL)
+    # depthsYapL.append(depthYapL)
+    # operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
+    # depthsHistogramYapL[depthYapL]+=1
 
-    signsYapT.append(signYapT)
-    depthsYapT.append(depthYapT)
-    operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
-    depthsHistogramYapT[depthYapT]+=1
+    # signsYapT.append(signYapT)
+    # depthsYapT.append(depthYapT)
+    # operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
+    # depthsHistogramYapT[depthYapT]+=1
 
     signsSoS.append(signSoS)
     depthsSoS.append(depthSoS)
@@ -170,23 +170,23 @@ for iteration in range(0, n):
 
 
 
-print("\n\n------------------------------------------------------------------- Yap Lex")
-print("Here are the depth stats for Yap Lex")
-printStats(depthsYapL)
-print("\nHere are the operations stats for Yap Lex")
-printStats(operationsYapL)
-print(f"\nHere's the histogram:")
-for key, value in depthsHistogramYapL.items():
-    print(f"Depth: {key}, count: {value}")
+# print("\n\n------------------------------------------------------------------- Yap Lex")
+# print("Here are the depth stats for Yap Lex")
+# printStats(depthsYapL)
+# print("\nHere are the operations stats for Yap Lex")
+# printStats(operationsYapL)
+# print(f"\nHere's the histogram:")
+# for key, value in depthsHistogramYapL.items():
+    # print(f"Depth: {key}, count: {value}")
 
-print("\n\n------------------------------------------------------------------- Yap Total")
-print("Here are the depth stats for Yap Total")
-printStats(depthsYapT)
-print("\nHere are the operations stats for Yap Total")
-printStats(operationsYapT)
-print(f"\nHere's the histogram:")
-for key, value in depthsHistogramYapT.items():
-    print(f"Depth: {key}, count: {value}")
+# print("\n\n------------------------------------------------------------------- Yap Total")
+# print("Here are the depth stats for Yap Total")
+# printStats(depthsYapT)
+# print("\nHere are the operations stats for Yap Total")
+# printStats(operationsYapT)
+# print(f"\nHere's the histogram:")
+# for key, value in depthsHistogramYapT.items():
+    # print(f"Depth: {key}, count: {value}")
 
 print("\n\n------------------------------------------------------------------- Sos")
 print("Here are the depth stats for SoS")

@@ -178,8 +178,11 @@ def parametrizeAndOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1
     s1 = Matrix([pj1 - pv1, pj2 - pv2])
     s2 = Matrix([pk1 - pu1, pk2 - pu2])
 
-    q1 = Matrix([pl1 - pv1, pl2 - pv2])
-    q2 = Matrix([pl1 - pu1, pl2 - pu2])
+    # q1 = Matrix([pl1 - pv1, pl2 - pv2])
+    # q2 = Matrix([pl1 - pu1, pl2 - pu2])
+
+    q1 = Matrix([pv1 - pl1, pv2 - pl2])
+    q2 = Matrix([pu1 - pl1, pu2 - pl2])
 
     q1xs1 = Matrix([
         q1.T.tolist()[0],  # convert row matrix to flat list
@@ -230,23 +233,23 @@ def dualizeAndOrientYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, p
 
     # p_li homogenious
     p_li = (
-        p_l[1] - p_i[1],
-        p_i[0] - p_l[0],
-        p_l[0] * p_i[1] - p_l[1] * p_i[0]
+        p_i[1] - p_l[1],
+        p_l[0] - p_i[0],
+        p_i[0] * p_l[1] - p_l[0] * p_i[1]
     )
 
     # p_vj homogenious
     p_vj = (
-        p_v[1] - p_j[1],
-        p_j[0] - p_v[0],
-        p_v[0] * p_j[1] - p_v[1] * p_j[0]
+        p_j[1] - p_v[1],
+        p_v[0] - p_j[0],
+        p_j[0] * p_v[1] - p_v[0] * p_j[1]
     )
 
     # p_uk
     p_uk = (
-        p_u[1] - p_k[1],
-        p_k[0] - p_u[0],
-        p_u[0] * p_k[1] - p_u[1] * p_k[0]
+        p_k[1] - p_u[1],
+        p_u[0] - p_k[0],
+        p_k[0] * p_u[1] - p_u[0] * p_k[1]
     )
 
     p = IndexedBase('p')

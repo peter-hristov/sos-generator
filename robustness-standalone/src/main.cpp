@@ -409,10 +409,30 @@ size_t computeRepeatedVertices(const vector<Point_2> &points)
     return points.size() - uniqueVertices.size();
 }
 
+
+size_t computeRepeatedVerticesBruteForce(const vector<Point_2> &points)
+{
+    int duplicatePairs = 0;
+    for (std::size_t i = 0; i < points.size(); ++i) 
+    {
+        cout << i << " / " << points.size() << endl;
+        for (std::size_t j = i + 1; j < points.size(); ++j) 
+        {
+            if (points[i] == points[j])
+            {
+                duplicatePairs++;
+            }
+
+        }
+    }
+
+    return duplicatePairs;
+}
+
+
 pair<vector<Point_2>, vector<Segment_2>> computePointsAndIndices(Data *data)
 {
     std::vector<Point_2> arrangementPoints;
-    std::map<Point_2, int> arrangementPointsIdices;
 
     arrangementPoints.resize(data->vertexCoordinatesF.size());
     for (int i = 0 ; i < data->vertexCoordinatesF.size() ; i++)
@@ -422,8 +442,32 @@ pair<vector<Point_2>, vector<Segment_2>> computePointsAndIndices(Data *data)
         const Point_2 point(u, v);
 
         arrangementPoints[i] = point;
-        arrangementPointsIdices[point] = i;
     };
+
+
+    int duplicatePairs = 0;
+    for (std::size_t i = 0; i < arrangementPoints.size(); ++i) 
+    {
+        cout << i << " / " << arrangementPoints.size() << endl;
+        for (std::size_t j = i + 1; j < arrangementPoints.size(); ++j) 
+        {
+            if (arrangementPoints[i].x() == arrangementPoints[j].x() && arrangementPoints[i].y() == arrangementPoints[j].y())
+            {
+                duplicatePairs++;
+            }
+
+        }
+    }
+
+    cout << "There are " << duplicatePairs << " duplicate pairs.\n";
+
+
+    return {};
+
+
+
+
+
 
     std::map<std::set<size_t>, bool> uniqueEdges;
     for (int i = 0 ; i < data->tetrahedra.size() ; i++)
@@ -509,6 +553,9 @@ int main(int argc, char* argv[])
     }
     Timer::stop("Read data                              :");
 
+    //cout << "Tets = " << data->tetrahedra.size() << endl;
+    //return 0;
+
     printf("Computing points and segments...\n");
     Timer::start();
     const auto [points, segments] = computePointsAndIndices(data);
@@ -526,7 +573,8 @@ int main(int argc, char* argv[])
         printf("Computing duplicated pints...\n");
         Timer::start();
         cout << "Computing repeated vertices..." << endl;
-        size_t repeatedVertices = computeRepeatedVertices(points);
+        //size_t repeatedVertices = computeRepeatedVertices(points);
+        size_t repeatedVertices = computeRepeatedVerticesBruteForce(points);
         Timer::stop("Computed repeated vertices             :");
         printf("------------------------------------------------------------------------There are %ld repeated vertices out of %ld.\n", repeatedVertices, points.size());
     }
