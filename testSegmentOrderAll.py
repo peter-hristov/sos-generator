@@ -6,6 +6,8 @@ from collections import defaultdict
 import schemes
 import methods
 
+from concurrent.futures import ProcessPoolExecutor
+
 if len(sys.argv) != 2:
     print("Usage: python your_script.py <num_iterations>")
     sys.exit(1)
@@ -53,6 +55,38 @@ def evaluateTable(pExpressions, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2
             return expressionSign, i
 
     raise ValueError("Table could not be evaluated") 
+
+
+def evaluate_iteration(iteration):
+    # print(f"---------------------------------------------------------- At iteration {iteration}")
+    start = time.time()
+
+    pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
+
+    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2,
+                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2,
+                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2,
+                                      pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+
+    end = time.time()
+    # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
+
+    return {
+        "signYapL": signYapL,
+        "depthYapL": depthYapL,
+        "signYapT": signYapT,
+        "depthYapT": depthYapT,
+        "signSoS": signSoS,
+        "depthSoS": depthSoS
+    }
+
+
+
+
+
+
 
 
 #
@@ -134,39 +168,72 @@ depthsSoS = []
 operationsSoS = []
 depthsHistogramSoS = defaultdict(int)
 
-for iteration in range(0, n):
+# for iteration in range(0, n):
 
-    print(f"---------------------------------------------------------- At iteration {iteration}")
-    start = time.time()
+    # print(f"---------------------------------------------------------- At iteration {iteration}")
+    # start = time.time()
 
-    # Generate concurrent points
-    pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
+    # # Generate concurrent points
+    # pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
 
-    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
 
-    signsYapL.append(signYapL)
-    depthsYapL.append(depthYapL)
-    operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
-    depthsHistogramYapL[depthYapL]+=1
+    # signsYapL.append(signYapL)
+    # depthsYapL.append(depthYapL)
+    # operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
+    # depthsHistogramYapL[depthYapL]+=1
 
-    signsYapT.append(signYapT)
-    depthsYapT.append(depthYapT)
-    operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
-    depthsHistogramYapT[depthYapT]+=1
+    # signsYapT.append(signYapT)
+    # depthsYapT.append(depthYapT)
+    # operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
+    # depthsHistogramYapT[depthYapT]+=1
 
-    signsSoS.append(signSoS)
-    depthsSoS.append(depthSoS)
-    operationsSoS.append(sum(operationCountSoS[:depthSoS]))
-    depthsHistogramSoS[depthSoS]+=1
+    # signsSoS.append(signSoS)
+    # depthsSoS.append(depthSoS)
+    # operationsSoS.append(sum(operationCountSoS[:depthSoS]))
+    # depthsHistogramSoS[depthSoS]+=1
 
-    end = time.time()
+    # end = time.time()
 
-    print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
+    # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
     # print(f"The sign is {expressionSign} at depth {depth}")
     # print(f"The sign is {expressionSign} at depth {depth}")
     # print(f"The sign is {expressionSign} at depth {depth}")
+
+
+
+with ProcessPoolExecutor() as executor:
+    results = list(executor.map(evaluate_iteration, range(n)))
+
+for r in results:
+    signsYapL.append(r["signYapL"])
+    depthsYapL.append(r["depthYapL"])
+    operationsYapL.append(sum(operationCountYapLex[:r["depthYapL"]]))
+    depthsHistogramYapL[r["depthYapL"]] += 1
+
+    signsYapT.append(r["signYapT"])
+    depthsYapT.append(r["depthYapT"])
+    operationsYapT.append(sum(operationCountYapTotal[:r["depthYapT"]]))
+    depthsHistogramYapT[r["depthYapT"]] += 1
+
+    signsSoS.append(r["signSoS"])
+    depthsSoS.append(r["depthSoS"])
+    operationsSoS.append(sum(operationCountSoS[:r["depthSoS"]]))
+    depthsHistogramSoS[r["depthSoS"]] += 1
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
