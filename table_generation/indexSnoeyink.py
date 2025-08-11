@@ -3,7 +3,6 @@ from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simpli
 import methods
 
 
-
 def perturbPoint(p, e):
     return [p[0] + e * p[1], p[1] + (e**2) * p[0] + (e**3) * (p[0]**2 + p[1]**2)]
     # return [p[0] + e*p[1], p[1] + p[0]*e**2]

@@ -6,7 +6,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 # Local imports
 from . import geometry, stats
-from table_generation import schemes, methods
+from table_generation import schemes, utility
 
 if len(sys.argv) != 2:
     print("Usage: python your_script.py <num_iterations>")
@@ -85,9 +85,9 @@ print("Computing tables for SoS...")
 pExpressionsSoS, eExpressionsSos = schemes.getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [methods.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSoS = [methods.count_ops(p) for p in pExpressionsSoS]
+operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
+operationCountSoS = [utility.count_ops(p) for p in pExpressionsSoS]
 
 
 # for index in range(len(pExpressionsYapTotal)):

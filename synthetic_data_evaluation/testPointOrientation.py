@@ -5,7 +5,7 @@ from collections import defaultdict
 
 # Local imports
 from . import geometry, stats
-from table_generation import schemes, methods
+from table_generation import schemes, utility 
 
 # Handle input arguments
 if len(sys.argv) != 2:
@@ -53,9 +53,9 @@ print("Computing tables for SoS...")
 pExpressionsSos, eExpressionsSos = schemes.getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [methods.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSos = [methods.count_ops(p) for p in pExpressionsSos]
+operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
+operationCountSos = [utility.count_ops(p) for p in pExpressionsSos]
 
 
 # Print for debugging purposes 
