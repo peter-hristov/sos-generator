@@ -302,3 +302,22 @@ def getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, orderingType):
 
     return pExpressionsNonZero, eExpressionsNonZero 
 
+
+def getEvaluationTableSoSOrient(pi1, pi2, pj1, pj2, pk1, pk2):
+
+    # Symbolic indexed bases
+    p = IndexedBase('p')
+    e = IndexedBase('e')
+
+    # Symbolic variables for the indices
+    variables = symbols("i j k l u v")
+    i, j, k, l, u, v = variables
+
+    # The expression
+    det = methods.orientationTest(p,
+            (pi1 + e[i, 1], pi2 + e[i, 2]), 
+            (pj1 + e[j, 1], pj2 + e[j, 2]), 
+            (pk1 + e[k, 1], pk2 + e[k, 2])
+            )
+
+    return getEvaluationTableSos(p, e, variables, det)

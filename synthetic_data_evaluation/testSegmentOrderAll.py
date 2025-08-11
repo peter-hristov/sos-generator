@@ -6,6 +6,8 @@ from collections import defaultdict
 
 from table_generation import schemes, methods
 
+from . import geometry, stats
+
 from concurrent.futures import ProcessPoolExecutor
 
 if len(sys.argv) != 2:
@@ -18,25 +20,8 @@ except ValueError:
     print("Invalid input: must be an integer")
     sys.exit(1)
 
-def printStats(depths):
-    # After the loop
-    n = len(depths)
-    maxD = max(depths)
-    mean = sum(depths) / n
-    variance = sum((d - mean) ** 2 for d in depths) / (n - 1)  # sample stddev
-    stddev = variance ** 0.5
 
-    # plt.hist(depths, bins=100, edgecolor='black')
-    # plt.xlabel('Count')
-    # plt.ylabel('Frequency')
-    # plt.title('Histogram of Counts')
-    # plt.grid(True)
-    # plt.show()
-
-    print(f"Average: {float(mean):.3f}")
-    print(f"Max: {float(maxD):.3f}")
-    print(f"Standard deviation: {float(stddev):.3f}")
-
+# Evaluate the table for a given scheme with concrete numbers to output +-
 def evaluateTable(pExpressions, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk):
 
     subs_dict = {
@@ -255,27 +240,27 @@ for r in results:
 
 print("\n\n------------------------------------------------------------------- Yap Lex")
 print("Here are the depth stats for Yap Lex")
-printStats(depthsYapL)
+stats.printStats(depthsYapL)
 print("\nHere are the operations stats for Yap Lex")
-printStats(operationsYapL)
+stats.printStats(operationsYapL)
 print(f"\nHere's the histogram:")
 for key, value in depthsHistogramYapL.items():
     print(f"Depth: {key}, count: {value}")
 
 print("\n\n------------------------------------------------------------------- Yap Total")
 print("Here are the depth stats for Yap Total")
-printStats(depthsYapT)
+stats.printStats(depthsYapT)
 print("\nHere are the operations stats for Yap Total")
-printStats(operationsYapT)
+stats.printStats(operationsYapT)
 print(f"\nHere's the histogram:")
 for key, value in depthsHistogramYapT.items():
     print(f"Depth: {key}, count: {value}")
 
 print("\n\n------------------------------------------------------------------- Sos")
 print("Here are the depth stats for SoS")
-printStats(depthsSoS)
+stats.printStats(depthsSoS)
 print("\nHere are the operations stats for SoS")
-printStats(operationsSoS)
+stats.printStats(operationsSoS)
 print(f"\nHere's the histogram:")
 for key, value in depthsHistogramSoS.items():
     print(f"Depth: {key}, count: {value}")
