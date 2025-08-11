@@ -69,6 +69,7 @@ python3 -m synthetic_data_evaluation.testSegmentOrderAll.py 100
 ### CGAL
 
 ```
+cd real_world_data_evaluation/librarires
 git clone --recursive https://github.com/CGAL/cgal cgal
 cd ./cgal
 git checkout v6.0.1 
@@ -76,7 +77,7 @@ git checkout v6.0.1
 mkdir build install
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX="$projectFolder/librarires/cgal/install" -DCMAKE_BUILD_TYPE="Release" ..
+cmake -DCMAKE_INSTALL_PREFIX="$projectFolder/real_world_data_evaluation/librarires/cgal/install" -DCMAKE_BUILD_TYPE="Release" ..
 make -j 4
 make install
 ```
@@ -85,6 +86,7 @@ make install
 ### VTK
 
 ```
+cd real_world_data_evaluation/librarires
 git clone --recursive https://gitlab.kitware.com/vtk/vtk.git VTK-9.4.1
 cd ./VTK-9.4.1
 git checkout v9.4.1 
@@ -92,7 +94,7 @@ git checkout v9.4.1
 mkdir build install
 cd build
 
-cmake -DCMAKE_INSTALL_PREFIX="$projectFolder/librarires/VTK-9.4.1/install" -DCMAKE_BUILD_TYPE="Release" ..
+cmake -DCMAKE_INSTALL_PREFIX="$projectFolder/real_world_data_evaluation/librarires/VTK-9.4.1/install" -DCMAKE_BUILD_TYPE="Release" ..
 make -j 4
 make install
 ```
@@ -102,6 +104,6 @@ make install
 
 ## Build
 ```
-cmake -DCMAKE_PREFIX_PATH="$projectFolder/cgal/install;$projectFolder/VTK-9.4.1/install" -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_PREFIX_PATH="$projectFolder/real_world_data_evaluation/librarires/cgal/install;$projectFolder/real_world_data_evaluation/librarires/VTK-9.4.1/install" ..
 make
 ```
