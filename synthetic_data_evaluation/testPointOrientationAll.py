@@ -3,9 +3,9 @@ import time
 from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
 
 from collections import defaultdict
-import schemes
-import methods
-from sympy import count_ops
+# from sympy import count_ops
+
+from table_generation import schemes, methods
 
 if len(sys.argv) != 2:
     print("Usage: python your_script.py <num_iterations>")
@@ -61,26 +61,24 @@ pk1, pk2 = symbols("pk1, pk2")
 
 print("Computing tables for Yap Lex")
 pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, "lex")
-operationCountYapLex = [count_ops(p) for p in pExpressionsYapLex]
 
-for index in range(len(pExpressionsYapLex)):
-    print(f"Index: {index}")
-    print(f"expression: {pExpressionsYapLex[index]}")
-    print(f"operations: {operationCountYapLex[index]}")
-
-print("\n\n")
 
 print("Computing tables for Yap Total")
 pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, "total")
-operationCountYapTotal = [count_ops(p) for p in pExpressionsYapTotal]
 
-for index in range(len(pExpressionsYapTotal)):
-    print(f"Index: {index}")
-    print(f"expression: {pExpressionsYapTotal[index]}")
-    print(f"operations: {operationCountYapTotal[index]}")
+# for index in range(len(pExpressionsYapLex)):
+    # print(f"Index: {index}")
+    # print(f"expression: {pExpressionsYapLex[index]}")
+    # print(f"operations: {operationCountYapLex[index]}")
+
+# print("\n\n")
+# for index in range(len(pExpressionsYapTotal)):
+    # print(f"Index: {index}")
+    # print(f"expression: {pExpressionsYapTotal[index]}")
+    # print(f"operations: {operationCountYapTotal[index]}")
 
 
-exit()
+# exit()
 
 
 

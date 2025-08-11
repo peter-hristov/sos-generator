@@ -2,7 +2,8 @@ import time
 
 from sympy import symbols, diff, IndexedBase, latex
 from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
-import methods
+
+from . import methods
 
 import itertools
 

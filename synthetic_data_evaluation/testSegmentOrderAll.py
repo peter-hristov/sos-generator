@@ -3,8 +3,10 @@ import time
 from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
 
 from collections import defaultdict
-import schemes
-import methods
+
+from table_generation import schemes, methods
+
+from concurrent.futures import ProcessPoolExecutor
 
 if len(sys.argv) != 2:
     print("Usage: python your_script.py <num_iterations>")
@@ -55,6 +57,38 @@ def evaluateTable(pExpressions, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2
     raise ValueError("Table could not be evaluated") 
 
 
+def evaluate_iteration(iteration):
+    # print(f"---------------------------------------------------------- At iteration {iteration}")
+    start = time.time()
+
+    pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
+
+    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2,
+                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2,
+                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2,
+                                      pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+
+    end = time.time()
+    # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
+
+    return {
+        "signYapL": signYapL,
+        "depthYapL": depthYapL,
+        "signYapT": signYapT,
+        "depthYapT": depthYapT,
+        "signSoS": signSoS,
+        "depthSoS": depthSoS
+    }
+
+
+
+
+
+
+
+
 #
 # Get Yap
 #
@@ -88,7 +122,7 @@ e = IndexedBase('e')
 variables = symbols("i j k l u v")
 i, j, k, l, u, v = variables
 
-print("Computing tables for SoS")
+# print("Computing tables for SoS")
 
 det = methods.dualizeAndOrient(p, e, variables)
 pExpressionsSos, eExpressionsSos = schemes.getEvaluationTableSos(p, e, variables, det)
@@ -116,6 +150,22 @@ operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]
 operationCountYapTotal = [methods.count_ops(p) for p in pExpressionsYapTotal]
 operationCountSoS = [methods.count_ops(p) for p in pExpressionsSoS_substituted]
 
+
+for index in range(len(pExpressionsYapTotal)):
+    print(f"Index: {index}")
+    print(f"expression: {pExpressionsYapTotal[index]}")
+    print(f"operations: {operationCountYapTotal[index]}")
+
+print("\n\n")
+
+for index in range(len(pExpressionsSoS_substituted)):
+    print(f"Index: {index}")
+    print(f"expression: {pExpressionsSoS_substituted[index]}")
+    print(f"operations: {operationCountSoS[index]}")
+
+exit()
+
+
 # print(f"{len(pExpressionsSoS_substituted)}, {len(pExpressionsYapLex)}, {len(pExpressionsYapTotal)}")
 # exit()
 
@@ -134,22 +184,22 @@ depthsSoS = []
 operationsSoS = []
 depthsHistogramSoS = defaultdict(int)
 
-for iteration in range(0, n):
+# for iteration in range(0, n):
 
-    print(f"---------------------------------------------------------- At iteration {iteration}")
-    start = time.time()
+    # print(f"---------------------------------------------------------- At iteration {iteration}")
+    # start = time.time()
 
-    # Generate concurrent points
-    pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
+    # # Generate concurrent points
+    # pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
 
-    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    # signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
     # signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
     # signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
 
-    signsYapL.append(signYapL)
-    depthsYapL.append(depthYapL)
-    operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
-    depthsHistogramYapL[depthYapL]+=1
+    # signsYapL.append(signYapL)
+    # depthsYapL.append(depthYapL)
+    # operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
+    # depthsHistogramYapL[depthYapL]+=1
 
     # signsYapT.append(signYapT)
     # depthsYapT.append(depthYapT)
@@ -161,12 +211,45 @@ for iteration in range(0, n):
     # operationsSoS.append(sum(operationCountSoS[:depthSoS]))
     # depthsHistogramSoS[depthSoS]+=1
 
-    end = time.time()
+    # end = time.time()
 
-    print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
+    # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
     # print(f"The sign is {expressionSign} at depth {depth}")
     # print(f"The sign is {expressionSign} at depth {depth}")
     # print(f"The sign is {expressionSign} at depth {depth}")
+
+
+
+with ProcessPoolExecutor() as executor:
+    results = list(executor.map(evaluate_iteration, range(n)))
+
+for r in results:
+    signsYapL.append(r["signYapL"])
+    depthsYapL.append(r["depthYapL"])
+    operationsYapL.append(sum(operationCountYapLex[:r["depthYapL"]]))
+    depthsHistogramYapL[r["depthYapL"]] += 1
+
+    signsYapT.append(r["signYapT"])
+    depthsYapT.append(r["depthYapT"])
+    operationsYapT.append(sum(operationCountYapTotal[:r["depthYapT"]]))
+    depthsHistogramYapT[r["depthYapT"]] += 1
+
+    signsSoS.append(r["signSoS"])
+    depthsSoS.append(r["depthSoS"])
+    operationsSoS.append(sum(operationCountSoS[:r["depthSoS"]]))
+    depthsHistogramSoS[r["depthSoS"]] += 1
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -179,20 +262,20 @@ print(f"\nHere's the histogram:")
 for key, value in depthsHistogramYapL.items():
     print(f"Depth: {key}, count: {value}")
 
-# print("\n\n------------------------------------------------------------------- Yap Total")
-# print("Here are the depth stats for Yap Total")
-# printStats(depthsYapT)
-# print("\nHere are the operations stats for Yap Total")
-# printStats(operationsYapT)
-# print(f"\nHere's the histogram:")
-# for key, value in depthsHistogramYapT.items():
-    # print(f"Depth: {key}, count: {value}")
+print("\n\n------------------------------------------------------------------- Yap Total")
+print("Here are the depth stats for Yap Total")
+printStats(depthsYapT)
+print("\nHere are the operations stats for Yap Total")
+printStats(operationsYapT)
+print(f"\nHere's the histogram:")
+for key, value in depthsHistogramYapT.items():
+    print(f"Depth: {key}, count: {value}")
 
-# print("\n\n------------------------------------------------------------------- Sos")
-# print("Here are the depth stats for SoS")
-# printStats(depthsSoS)
-# print("\nHere are the operations stats for SoS")
-# printStats(operationsSoS)
-# print(f"\nHere's the histogram:")
-# for key, value in depthsHistogramSoS.items():
-    # print(f"Depth: {key}, count: {value}")
+print("\n\n------------------------------------------------------------------- Sos")
+print("Here are the depth stats for SoS")
+printStats(depthsSoS)
+print("\nHere are the operations stats for SoS")
+printStats(operationsSoS)
+print(f"\nHere's the histogram:")
+for key, value in depthsHistogramSoS.items():
+    print(f"Depth: {key}, count: {value}")
