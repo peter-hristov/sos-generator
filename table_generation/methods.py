@@ -1,12 +1,7 @@
 import random
-from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational
+from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, diff
 from sympy import Add, Mul, Pow
-
-
-
-
-
-
+import itertools
 
 def count_ops(expr):
     """Count arithmetic operations in a SymPy expression."""
@@ -29,15 +24,6 @@ def count_ops(expr):
         count += count_ops(arg)
 
     return count
-
-
-
-
-
-
-
-
-
 
 def isInArray(expression, expressionArray):
     for e in expressionArray:
@@ -265,10 +251,32 @@ def parametrizeAndOrder(p, e, variables):
 
 
 
+def getEvaluationTableSos(p, e, variables, expression):
 
+    # Unpack variables
+    i, j, k, l, u, v = variables
 
+    expression = simplify(expand(expression))
+    expressionTermsOrdered = expression.as_ordered_terms()
 
+    # print("Arranging terms into different levels...")
+    allTerms = []
+    # the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
+    for index in range(0, 1000000):
+        terms = sum([
+            t for t in expressionTermsOrdered
+            if count_indexed_with_base(t, e) == index
+        ])
 
+        # print(f"Index: {index}, terms: {terms}")
+
+        if (terms == 0):
+            break
+
+        allTerms.append(terms)
+
+    pExpressions, eExpressions = printSosTable(allTerms, p, e, variables)
+    return pExpressions, eExpressions
 
 def count_indexed_with_base(term, base):
     """Return the number of Indexed objects in a term with the given base."""
@@ -330,14 +338,14 @@ def printSosTable(allTerms, p, e, variableIndices):
 
             # Skip if it's not in the expression
             if not collectionExpression.has(collectionTerm):
-                print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
+                # print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
                 # print(f"The number of factors is {num_factors}")
                 # print(f"The collection expressions is {collectionExpression}")
                 # print(f"The p-term of that product has {len(collected_expr.as_ordered_terms())} terms:")
                 # print((collected_expr))
                 # print(f"Here it is simplified...")
                 # print(simplify(collected_expr))
-                print("------------------------------------- Skipping")
+                # print("------------------------------------- Skipping")
                 continue
 
             # if collectionExpression in s or (-1 * collectionExpression) in s:
@@ -347,8 +355,8 @@ def printSosTable(allTerms, p, e, variableIndices):
 
 
             if isInArray(collected_expr, pExpressions):
-                print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
-                print(f"------------------------------------- Skipping {collected_expr} p-term is already there")
+                # print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
+                # print(f"------------------------------------- Skipping {collected_expr} p-term is already there")
                 continue
 
             pExpressions.append(collected_expr)
@@ -361,14 +369,14 @@ def printSosTable(allTerms, p, e, variableIndices):
             # print(collected_expr)
             # print(f"Current num_factors = {num_factors}, compared to {len(allTerms) - 1}")
 
-            print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
-            print(f"The p-term of that product has {len(collected_expr.as_ordered_terms())} terms:")
-            print((collected_expr))
-            print(f"Here it is simplified...")
-            print(simplify(collected_expr))
+            # print(f"\n\nThe epsilon product with order {depth}: {(eProduct)}")
+            # print(f"The p-term of that product has {len(collected_expr.as_ordered_terms())} terms:")
+            # print((collected_expr))
+            # print(f"Here it is simplified...")
+            # print(simplify(collected_expr))
 
             if (num_factors == len(allTerms) - 1):
-                print("FOUND THE CONSTANT FACTOR!!!")
+                # print("FOUND THE CONSTANT FACTOR!!!")
                 return (pExpressions, eExpressions)
 
     return (pExpressions, eExpressions)
@@ -394,11 +402,89 @@ def evaluateExpresisonSign(pExpressions, eExpressions, p, variables, indexSubsti
     # We should never be here
     assert False
 
-    # expr3 = expr2.subs({
-        # p[0,1]: 4,
-        # p[1,1]: 5,
-        # p[2,1]: 6,
-        # p[3,1]: 7
-    # })  # Step 2
 
 
+
+
+
+
+# Used by Yap's method to generate orders of partial derivatives
+def all_partials_orderedTotal(f, vars, m):
+    """
+    Generate all partial derivatives of f with respect to vars
+    up to total order m, ordered by total order and lex order:
+    dx -> dy -> dz -> dx^2 -> dx dy -> dxdz ...
+
+    Args:
+      f: sympy expression
+      vars: list of sympy symbols
+      m: max total degree of derivatives
+
+    Returns:
+      List of tuples (orders, derivative_expr)
+    """
+    n = len(vars)
+    pProducts = []
+    eProducts = []
+
+    def gen_multiindices_exact_sum(n, total_order, prefix=()):
+        if len(prefix) == n:
+            if sum(prefix) == total_order:
+                yield prefix
+            return
+        for i in range(total_order + 1):
+            if sum(prefix) + i <= total_order:
+                yield from gen_multiindices_exact_sum(n, total_order, prefix + (i,))
+            else:
+                break
+
+    for total_order in range(m + 1):
+        for orders in gen_multiindices_exact_sum(n, total_order):
+            deriv = f
+            for var, order in zip(vars, orders):
+                if order > 0:
+                    deriv = diff(deriv, var, order)
+            pProducts.append(deriv)
+            eProducts.append(orders)
+
+    return pProducts, eProducts
+
+
+
+def all_partials_orderedLex(f, vars, m):
+    """
+    Generate all partial derivatives of f with respect to vars
+    up to total order m, ordered by total order and lex order:
+    dx -> dy -> dz -> dx^2 -> dx dy -> dxdz ...
+
+    Args:
+      f: sympy expression
+      vars: list of sympy symbols
+      m: max total degree of derivatives
+
+    Returns:
+      List of tuples (orders, derivative_expr)
+    """
+    n = len(vars)
+    pProducts = []
+    eProducts = []
+
+    def gen_multiindices_lex(n, max_total_order):
+        """
+        Generate multi-indices (tuples of length n) with sum <= max_total_order,
+        in lexicographic order: (0,0,1), (0,0,2), ..., (0,1,0), ...
+        """
+        for orders in itertools.product(range(max_total_order), repeat=n):
+            if sum(orders) <= max_total_order:
+                yield orders
+
+    for orders in gen_multiindices_lex(n, m):
+        # print(orders)
+        deriv = f
+        for var, order in zip(vars, orders):
+            if order > 0:
+                deriv = diff(deriv, var, order)
+        pProducts.append(deriv)
+        eProducts.append(orders)
+
+    return pProducts, eProducts

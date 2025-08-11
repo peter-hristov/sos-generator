@@ -35,19 +35,22 @@ def evaluateTable(pExpressions, pi1, pi2, pj1, pj2, pk1, pk2, pi, pj, pk):
 
     raise ValueError("Table could not be evaluated") 
 
+
+
+# Set up symbols for the evaluation tables
 pi1, pi2 = symbols("pi1, pi2")
 pj1, pj2 = symbols("pj1, pj2")
 pk1, pk2 = symbols("pk1, pk2")
 
 # Compute the evaluation tables for each scheme
-print("Computing tables for Yap Lex")
-pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, "lex")
+print("Computing tables for Yap Lex...")
+pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "lex")
 
-print("Computing tables for Yap Total")
-pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, "total")
+print("Computing tables for Yap Total...")
+pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "total")
 
-print("Computing tables for SoS")
-pExpressionsSos, eExpressionsSos = schemes.getEvaluationTableSoSOrient(pi1, pi2, pj1, pj2, pk1, pk2)
+print("Computing tables for SoS...")
+pExpressionsSos, eExpressionsSos = schemes.getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
 operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]

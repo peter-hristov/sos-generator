@@ -1,14 +1,12 @@
 import sys
 import time
-from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
-
+from sympy import symbols, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
 from collections import defaultdict
-
-from table_generation import schemes, methods
-
-from . import geometry, stats
-
 from concurrent.futures import ProcessPoolExecutor
+
+# Local imports
+from . import geometry, stats
+from table_generation import schemes, methods
 
 if len(sys.argv) != 2:
     print("Usage: python your_script.py <num_iterations>")
@@ -46,13 +44,13 @@ def evaluate_iteration(iteration):
     # print(f"---------------------------------------------------------- At iteration {iteration}")
     start = time.time()
 
-    pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
+    pl, pi, pv, pj, pu, pk = geometry.generateSegments((1, 1000))
 
     signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2,
                                         pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
     signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2,
                                         pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2,
+    signSoS, depthSoS = evaluateTable(pExpressionsSoS, pl1, pl2, pi1, pi2, pv1, pv2,
                                       pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
 
     end = time.time()
@@ -68,15 +66,7 @@ def evaluate_iteration(iteration):
     }
 
 
-
-
-
-
-
-
-#
-# Get Yap
-#
+# Set up symbols for the evaluation tables
 pl1, pl2 = symbols("pl1, pl2")
 pi1, pi2 = symbols("pi1, pi2")
 pv1, pv2 = symbols("pv1, pv2")
@@ -84,76 +74,38 @@ pj1, pj2 = symbols("pj1, pj2")
 pu1, pu2 = symbols("pu1, pu2")
 pk1, pk2 = symbols("pk1, pk2")
 
-print("Computing tables for Yap Lex")
-pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "lex")
+# Compute the evaluation tables for each scheme
+print("Computing tables for Yap Lex...")
+pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "lex")
 
-# print(pExpressionsYapLex[0])
+print("Computing tables for Yap Total...")
+pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "total")
 
-# exit()
+print("Computing tables for SoS...")
+pExpressionsSoS, eExpressionsSos = schemes.getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
 
-print("Computing tables for Yap Total")
-pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "total")
-
-
-
-#
-# Get SoS
-#
-# Symbolic indexed bases
-p = IndexedBase('p')
-e = IndexedBase('e')
-
-# Symbolic variables for the indices
-variables = symbols("i j k l u v")
-i, j, k, l, u, v = variables
-
-# print("Computing tables for SoS")
-
-det = methods.dualizeAndOrient(p, e, variables)
-pExpressionsSos, eExpressionsSos = schemes.getEvaluationTableSos(p, e, variables, det)
-
-# Replace the indexed base with symbols which can be evaluated
-replacements = {
-    p[l, 1]: pl1,
-    p[l, 2]: pl2,
-    p[i, 1]: pi1,
-    p[i, 2]: pi2,
-    p[v, 1]: pv1,
-    p[v, 2]: pv2,
-    p[j, 1]: pj1,
-    p[j, 2]: pj2,
-    p[u, 1]: pu1,
-    p[u, 2]: pu2,
-    p[k, 1]: pk1,
-    p[k, 2]: pk2,
-}
-
-pExpressionsSoS_substituted = [expr.subs(replacements) for expr in pExpressionsSos]
-
-# Count the number of operations in the tables for stats
+# Compute number of arithemtic operations for each row of the evaluation table for each scheme
 operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]
 operationCountYapTotal = [methods.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSoS = [methods.count_ops(p) for p in pExpressionsSoS_substituted]
+operationCountSoS = [methods.count_ops(p) for p in pExpressionsSoS]
 
 
-for index in range(len(pExpressionsYapTotal)):
-    print(f"Index: {index}")
-    print(f"expression: {pExpressionsYapTotal[index]}")
-    print(f"operations: {operationCountYapTotal[index]}")
+# for index in range(len(pExpressionsYapTotal)):
+    # print(f"Index: {index}")
+    # print(f"expression: {pExpressionsYapTotal[index]}")
+    # print(f"operations: {operationCountYapTotal[index]}")
 
-print("\n\n")
+# print("\n\n")
 
-for index in range(len(pExpressionsSoS_substituted)):
-    print(f"Index: {index}")
-    print(f"expression: {pExpressionsSoS_substituted[index]}")
-    print(f"operations: {operationCountSoS[index]}")
+# for index in range(len(pExpressionsSoS)):
+    # print(f"Index: {index}")
+    # print(f"expression: {pExpressionsSoS[index]}")
+    # print(f"operations: {operationCountSoS[index]}")
 
-exit()
-
-
-# print(f"{len(pExpressionsSoS_substituted)}, {len(pExpressionsYapLex)}, {len(pExpressionsYapTotal)}")
 # exit()
 
+
+# Set up arrays to hold the results for each test
 signsYapL = []
 depthsYapL = []
 operationsYapL = []
@@ -169,42 +121,9 @@ depthsSoS = []
 operationsSoS = []
 depthsHistogramSoS = defaultdict(int)
 
-# for iteration in range(0, n):
-
-    # print(f"---------------------------------------------------------- At iteration {iteration}")
-    # start = time.time()
-
-    # # Generate concurrent points
-    # pl, pi, pv, pj, pu, pk = methods.generateSegments((1, 1000))
-
-    # signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    # signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    # signSoS, depthSoS = evaluateTable(pExpressionsSoS_substituted, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-
-    # signsYapL.append(signYapL)
-    # depthsYapL.append(depthYapL)
-    # operationsYapL.append(sum(operationCountYapLex[:depthYapL]))
-    # depthsHistogramYapL[depthYapL]+=1
-
-    # signsYapT.append(signYapT)
-    # depthsYapT.append(depthYapT)
-    # operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
-    # depthsHistogramYapT[depthYapT]+=1
-
-    # signsSoS.append(signSoS)
-    # depthsSoS.append(depthSoS)
-    # operationsSoS.append(sum(operationCountSoS[:depthSoS]))
-    # depthsHistogramSoS[depthSoS]+=1
-
-    # end = time.time()
-
-    # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
-    # print(f"The sign is {expressionSign} at depth {depth}")
-    # print(f"The sign is {expressionSign} at depth {depth}")
-    # print(f"The sign is {expressionSign} at depth {depth}")
 
 
-
+# Run all tests in paralle
 with ProcessPoolExecutor() as executor:
     results = list(executor.map(evaluate_iteration, range(n)))
 
@@ -225,19 +144,7 @@ for r in results:
     depthsHistogramSoS[r["depthSoS"]] += 1
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Output stats over all tests
 print("\n\n------------------------------------------------------------------- Yap Lex")
 print("Here are the depth stats for Yap Lex")
 stats.printStats(depthsYapL)
