@@ -10,18 +10,18 @@ An open-source library for generating evaluation tables for the orientation of p
 # Required Python Librarires
 
 ## Core
+
+```
 sympy       1.14.0
 numpy       1.16.4
+```
 
 ## Visualisation
+
+```
 matplotlib  3.8.4
 ipywidgets  8.1.2
-
-
-
-
-
-
+```
 
 # Printing Evaluation Tables  
 
@@ -30,10 +30,6 @@ python3 -m table_generation.printPointOrientationTables
 
 ## Segment Order
 python3 -m table_generation.printSegmentOrderTables
-
-
-
-
 
 
 
