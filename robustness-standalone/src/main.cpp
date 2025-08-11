@@ -11,7 +11,26 @@
 #include "./Data.h"
 #include "./utility/CLI11.hpp"
 
+#include <gmpxx.h> // for mpq_class, numerator, denominator
 
+void print_point_rational(const Point_2& p) {
+    // Get lazy exact number from coordinate
+    auto x_lazy = CGAL::exact(p.x());
+    auto y_lazy = CGAL::exact(p.y());
+
+    // Force evaluation to get the exact number type (e.g., CGAL::Gmpq)
+    auto x_exact_val = x_lazy.exact();
+    auto y_exact_val = y_lazy.exact();
+
+    // Convert to mpq_class (GMP rational) from exact value
+    mpq_class x_exact(x_exact_val.numerator(), x_exact_val.denominator());
+    mpq_class y_exact(y_exact_val.numerator(), y_exact_val.denominator());
+
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+    std::cout << "X is : " << x_exact.get_num() << "/" << x_exact.get_den() << "\n";
+    std::cout << "Y is : " << y_exact.get_num() << "/" << y_exact.get_den() << "\n";
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+}
 
 struct LineLess {
     bool operator()(const Line_2& l1, const Line_2& l2) const {
@@ -133,6 +152,16 @@ long long computeConcurrentSegmentsRandom(const std::vector<Segment_2>& segments
             const Segment_2 &si = segments[i];
             const Segment_2 &sj = segments[j];
             const Segment_2 &sk = segments[k];
+
+            //std::cout << "Source: " << si.source() << std::endl;
+            //std::cout << "Target: " << si.target() << std::endl;
+
+            auto p = si.source();
+            cout << "-------------------------------- " << endl;
+            print_point_rational(p);
+
+            //std::cout << p.x().numerator() << "/" << p.x().denominator() << " "
+                //<< p.y().numerator() << "/" << p.y().denominator() << "\n";
 
 
             if (doSegmentsIntersect(si, sj, sk))
@@ -282,7 +311,6 @@ pair<size_t, size_t> computeCollinearPointsBruteForce(const vector<Point_2>& poi
 
     for (size_t i = 0; i < n; ++i)
     {
-        cout << i << " / " << n << endl;
         for (size_t j = i + 1; j < n; ++j)
         {
             for (size_t k = j + 1; k < n; ++k)
@@ -415,7 +443,7 @@ size_t computeRepeatedVerticesBruteForce(const vector<Point_2> &points)
     int duplicatePairs = 0;
     for (std::size_t i = 0; i < points.size(); ++i) 
     {
-        cout << i << " / " << points.size() << endl;
+        //cout << i << " / " << points.size() << endl;
         for (std::size_t j = i + 1; j < points.size(); ++j) 
         {
             if (points[i] == points[j])
@@ -445,24 +473,24 @@ pair<vector<Point_2>, vector<Segment_2>> computePointsAndIndices(Data *data)
     };
 
 
-    int duplicatePairs = 0;
-    for (std::size_t i = 0; i < arrangementPoints.size(); ++i) 
-    {
-        cout << i << " / " << arrangementPoints.size() << endl;
-        for (std::size_t j = i + 1; j < arrangementPoints.size(); ++j) 
-        {
-            if (arrangementPoints[i].x() == arrangementPoints[j].x() && arrangementPoints[i].y() == arrangementPoints[j].y())
-            {
-                duplicatePairs++;
-            }
+    //int duplicatePairs = 0;
+    //for (std::size_t i = 0; i < arrangementPoints.size(); ++i) 
+    //{
+        ////cout << i << " / " << arrangementPoints.size() << endl;
+        //for (std::size_t j = i + 1; j < arrangementPoints.size(); ++j) 
+        //{
+            //if (arrangementPoints[i].x() == arrangementPoints[j].x() && arrangementPoints[i].y() == arrangementPoints[j].y())
+            //{
+                //duplicatePairs++;
+            //}
 
-        }
-    }
+        //}
+    //}
 
-    cout << "There are " << duplicatePairs << " duplicate pairs.\n";
+    //cout << "There are " << duplicatePairs << " duplicate pairs.\n";
 
 
-    return {};
+    //return {};
 
 
 
@@ -573,8 +601,8 @@ int main(int argc, char* argv[])
         printf("Computing duplicated pints...\n");
         Timer::start();
         cout << "Computing repeated vertices..." << endl;
-        //size_t repeatedVertices = computeRepeatedVertices(points);
-        size_t repeatedVertices = computeRepeatedVerticesBruteForce(points);
+        size_t repeatedVertices = computeRepeatedVertices(points);
+        //size_t repeatedVertices = computeRepeatedVerticesBruteForce(points);
         Timer::stop("Computed repeated vertices             :");
         printf("------------------------------------------------------------------------There are %ld repeated vertices out of %ld.\n", repeatedVertices, points.size());
     }

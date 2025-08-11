@@ -122,7 +122,7 @@ e = IndexedBase('e')
 variables = symbols("i j k l u v")
 i, j, k, l, u, v = variables
 
-print("Computing tables for SoS")
+# print("Computing tables for SoS")
 
 det = methods.dualizeAndOrient(p, e, variables)
 pExpressionsSos, eExpressionsSos = schemes.getEvaluationTableSos(p, e, variables, det)
@@ -149,6 +149,22 @@ pExpressionsSoS_substituted = [expr.subs(replacements) for expr in pExpressionsS
 operationCountYapLex = [methods.count_ops(p) for p in pExpressionsYapLex]
 operationCountYapTotal = [methods.count_ops(p) for p in pExpressionsYapTotal]
 operationCountSoS = [methods.count_ops(p) for p in pExpressionsSoS_substituted]
+
+
+for index in range(len(pExpressionsYapTotal)):
+    print(f"Index: {index}")
+    print(f"expression: {pExpressionsYapTotal[index]}")
+    print(f"operations: {operationCountYapTotal[index]}")
+
+print("\n\n")
+
+for index in range(len(pExpressionsYapLex)):
+    print(f"Index: {index}")
+    print(f"expression: {pExpressionsYapLex[index]}")
+    print(f"operations: {operationCountYapLex[index]}")
+
+exit()
+
 
 # print(f"{len(pExpressionsSoS_substituted)}, {len(pExpressionsYapLex)}, {len(pExpressionsYapTotal)}")
 # exit()

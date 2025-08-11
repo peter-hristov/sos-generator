@@ -258,9 +258,9 @@ def getEvaluationTableYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1,
     # The 3 here is hardcoded because it is enough for the segment order predicate
 
     if (orderingType == 'total'):
-        pExpressions, eExpressions = all_partials_orderedTotal(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 3)
+        pExpressions, eExpressions = all_partials_orderedTotal(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
     elif (orderingType == 'lex'):
-        pExpressions, eExpressions = all_partials_orderedLex(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 3)
+        pExpressions, eExpressions = all_partials_orderedLex(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
 
     # Filter out the zero expressions
     pExpressionsNonZero = []
@@ -286,9 +286,9 @@ def getEvaluationTableYapOrient(pi1, pi2, pj1, pj2, pk1, pk2, orderingType):
     # The 3 here is hardcoded because it is enough for the segment order predicate
 
     if (orderingType == 'total'):
-        pExpressions, eExpressions = all_partials_orderedTotal(expression, [pi1, pi2, pj1, pj2, pk1, pk2], 2)
+        pExpressions, eExpressions = all_partials_orderedTotal(expression, [pi1, pi2, pj1, pj2, pk1, pk2], 3)
     elif (orderingType == 'lex'):
-        pExpressions, eExpressions = all_partials_orderedLex(expression, [pi1, pi2, pj1, pj2, pk1, pk2], 2)
+        pExpressions, eExpressions = all_partials_orderedLex(expression, [pi1, pi2, pj1, pj2, pk1, pk2], 3)
 
     # Filter out the zero expressions
     pExpressionsNonZero = []

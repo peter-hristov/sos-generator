@@ -63,7 +63,7 @@ def getEvaluationTableAllienz(p, e, variables):
     eExpressions = []
 
     # the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
-    for index in range(0, 10):
+    for index in range(0, 20):
 
         coefficient = e**index
 
@@ -81,8 +81,8 @@ def getEvaluationTableAllienz(p, e, variables):
             pExpression = factor(simplify(collect(terms, e**index).coeff(e**index)))
             
 
-        if (methods.count_ops(pExpression) == 0):
-            continue
+        # if (methods.count_ops(pExpression) == 0):
+            # continue
 
         print("-------------------------------------------------------------------")
         print(f"Index: {index}.")
