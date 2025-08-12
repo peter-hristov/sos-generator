@@ -1,9 +1,6 @@
-import time
+from sympy import symbols, IndexedBase, expand
 
-from sympy import symbols, IndexedBase, latex
-from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, sign, Rational, latex
-
-# Local import
+# Local imports
 from . import predicates, sos, yap, alliez
 
 def getEvaluationTablePointOrientationYap(pi, pj, pk, orderingType):

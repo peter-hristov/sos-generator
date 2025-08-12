@@ -1,11 +1,30 @@
 import sys
 import time
-from sympy import symbols, sign 
 from collections import defaultdict
+
+from sympy import symbols, sign, count_ops
 
 # Local imports
 from . import geometry, stats
-from table_generation import schemes, utility 
+from table_generation import schemes 
+
+# Evaluate the table for a given scheme with concrete numbers to output +-
+def evaluateTable(pExpressions, pi, pj, pk, pi_c, pj_c, pk_c):
+
+    subs_dict = {
+            pi[0]: pi_c[0], pi[1]: pi_c[1],
+            pj[0]: pj_c[0], pj[1]: pj_c[1],
+            pk[0]: pk_c[0], pk[1]: pk_c[1],
+            }
+
+    for i, pExpression in enumerate(pExpressions):
+        expressionSign = sign(pExpression.subs(subs_dict).evalf())
+
+        if (expressionSign != 0):
+            return expressionSign, i
+
+    raise ValueError("Table could not be evaluated") 
+
 
 # Handle input arguments
 if len(sys.argv) != 2:
@@ -18,53 +37,34 @@ except ValueError:
     print("Invalid input: must be an integer")
     sys.exit(1)
 
-# Evaluate the table for a given scheme with concrete numbers to output +-
-def evaluateTable(pExpressions, pi1, pi2, pj1, pj2, pk1, pk2, pi, pj, pk):
-
-    subs_dict = {
-            pi1: pi[0], pi2: pi[1],
-            pj1: pj[0], pj2: pj[1],
-            pk1: pk[0], pk2: pk[1],
-            }
-
-    for i, pExpression in enumerate(pExpressions):
-        expressionSign = sign(pExpression.subs(subs_dict).evalf())
-
-        if (expressionSign != 0):
-            return expressionSign, i
-
-    raise ValueError("Table could not be evaluated") 
-
-
-
-# Set up symbols for the evaluation tables
-pi1, pi2 = symbols("pi1, pi2")
-pj1, pj2 = symbols("pj1, pj2")
-pk1, pk2 = symbols("pk1, pk2")
+# Set up symbolic coordinates of the input points
+pi = symbols("pi1, pi2")
+pj = symbols("pj1, pj2")
+pk = symbols("pk1, pk2")
 
 # Compute the evaluation tables for each scheme
 print("Computing tables for Yap Lex...")
-pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "lex")
+pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTablePointOrientationYap(pi, pj, pk, "lex")
 
 print("Computing tables for Yap Total...")
-pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "total")
+pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTablePointOrientationYap(pi, pj, pk, "total")
 
 print("Computing tables for SoS...")
-pExpressionsSos, eExpressionsSos = schemes.getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2)
+pExpressionsSoS, eExpressionsSoS = schemes.getEvaluationTablePointOrientationSoS(pi, pj, pk)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSos = [utility.count_ops(p) for p in pExpressionsSos]
+operationCountYapLex = [count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [count_ops(p) for p in pExpressionsYapTotal]
+operationCountSoS = [count_ops(p) for p in pExpressionsSoS]
 
 
 # Print for debugging purposes 
 # 
-for index in range(len(pExpressionsSos)):
+for index in range(len(pExpressionsSoS)):
     print(f"Index: {index}")
-    print(f"expression: {pExpressionsSos[index]}")
-    print(f"e-Term: {eExpressionsSos[index]}")
-    print(f"operations: {operationCountSos[index]}")
+    print(f"expression: {pExpressionsSoS[index]}")
+    print(f"e-Term: {eExpressionsSoS[index]}")
+    print(f"operations: {operationCountSoS[index]}")
 
 # for index in range(len(pExpressionsYapLex)):
     # print(f"Index: {index}")
@@ -89,10 +89,10 @@ depthsYapT = []
 operationsYapT = []
 depthsHistogramYapT = defaultdict(int)
 
-signsSos = []
-depthsSos = []
-operationsSos = []
-depthsHistogramSos = defaultdict(int)
+signsSoS = []
+depthsSoS = []
+operationsSoS = []
+depthsHistogramSoS = defaultdict(int)
 
 for iteration in range(0, n):
 
@@ -100,11 +100,11 @@ for iteration in range(0, n):
     start = time.time()
 
     # Generate concurrent points
-    pi, pj, pk = geometry.generateColinearPoints((1, 1000000))
+    pi_c, pj_c, pk_c = geometry.generateColinearPoints((1, 1000000))
 
-    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pi1, pi2, pj1, pj2, pk1, pk2, pi, pj, pk)
-    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pi1, pi2, pj1, pj2, pk1, pk2, pi, pj, pk)
-    signSos, depthSos = evaluateTable(pExpressionsSos, pi1, pi2, pj1, pj2, pk1, pk2, pi, pj, pk)
+    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pi, pj, pk, pi_c, pj_c, pk_c)
+    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pi, pj, pk, pi_c, pj_c, pk_c)
+    signSoS, depthSoS = evaluateTable(pExpressionsSoS, pi, pj, pk, pi_c, pj_c, pk_c)
 
     signsYapL.append(signYapL)
     depthsYapL.append(depthYapL)
@@ -116,10 +116,10 @@ for iteration in range(0, n):
     operationsYapT.append(sum(operationCountYapTotal[:depthYapT]))
     depthsHistogramYapT[depthYapT]+=1
 
-    signsSos.append(signSos)
-    depthsSos.append(depthSos)
-    operationsSos.append(sum(operationCountSos[:depthSos]))
-    depthsHistogramSos[depthSos]+=1
+    signsSoS.append(signSoS)
+    depthsSoS.append(depthSoS)
+    operationsSoS.append(sum(operationCountSoS[:depthSoS]))
+    depthsHistogramSoS[depthSoS]+=1
 
     end = time.time()
 
@@ -145,11 +145,11 @@ print(f"\nHere's the histogram:")
 for key, value in depthsHistogramYapT.items():
     print(f"Depth: {key}, count: {value}")
 
-print("\n\n------------------------------------------------------------------- Sos")
+print("\n\n------------------------------------------------------------------- SoS")
 print("Here are the depth stats for SoS")
-stats.printStats(depthsSos)
+stats.printStats(depthsSoS)
 print("\nHere are the operations stats for SoS")
-stats.printStats(operationsSos)
+stats.printStats(operationsSoS)
 print(f"\nHere's the histogram:")
-for key, value in depthsHistogramSos.items():
+for key, value in depthsHistogramSoS.items():
     print(f"Depth: {key}, count: {value}")

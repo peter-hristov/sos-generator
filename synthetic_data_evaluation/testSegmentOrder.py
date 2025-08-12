@@ -1,34 +1,24 @@
 import sys
 import time
-from sympy import symbols, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
 
+from sympy import symbols, sign, count_ops
+
 # Local imports
 from . import geometry, stats
-from table_generation import schemes, utility
-
-if len(sys.argv) != 2:
-    print("Usage: python your_script.py <num_iterations>")
-    sys.exit(1)
-
-try:
-    n = int(sys.argv[1])
-except ValueError:
-    print("Invalid input: must be an integer")
-    sys.exit(1)
-
+from table_generation import schemes 
 
 # Evaluate the table for a given scheme with concrete numbers to output +-
-def evaluateTable(pExpressions, pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk):
+def evaluateTable(pExpressions, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c):
 
     subs_dict = {
-            pl1: pl[0], pl2: pl[1],
-            pi1: pi[0], pi2: pi[1],
-            pv1: pv[0], pv2: pv[1],
-            pj1: pj[0], pj2: pj[1],
-            pu1: pu[0], pu2: pu[1],
-            pk1: pk[0], pk2: pk[1],
+            pl[0]: pl_c[0], pl[1]: pl_c[1],
+            pi[0]: pi_c[0], pi[1]: pi_c[1],
+            pv[0]: pv_c[0], pv[1]: pv_c[1],
+            pj[0]: pj_c[0], pj[1]: pj_c[1],
+            pu[0]: pu_c[0], pu[1]: pu_c[1],
+            pk[0]: pk_c[0], pk[1]: pk_c[1],
             }
 
     for i, pExpression in enumerate(pExpressions):
@@ -44,14 +34,11 @@ def evaluate_iteration(iteration):
     # print(f"---------------------------------------------------------- At iteration {iteration}")
     start = time.time()
 
-    pl, pi, pv, pj, pu, pk = geometry.generateSegments((1, 1000))
+    pl_c, pi_c, pv_c, pj_c, pu_c, pk_c = geometry.generateSegments((1, 1000))
 
-    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl1, pl2, pi1, pi2, pv1, pv2,
-                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl1, pl2, pi1, pi2, pv1, pv2,
-                                        pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
-    signSoS, depthSoS = evaluateTable(pExpressionsSoS, pl1, pl2, pi1, pi2, pv1, pv2,
-                                      pj1, pj2, pu1, pu2, pk1, pk2, pl, pi, pv, pj, pu, pk)
+    signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c)
+    signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c)
+    signSoS, depthSoS = evaluateTable(pExpressionsSoS, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c)
 
     end = time.time()
     # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
@@ -66,44 +53,41 @@ def evaluate_iteration(iteration):
     }
 
 
+
+
+if len(sys.argv) != 2:
+    print("Usage: python your_script.py <num_iterations>")
+    sys.exit(1)
+
+try:
+    n = int(sys.argv[1])
+except ValueError:
+    print("Invalid input: must be an integer")
+    sys.exit(1)
+
+
 # Set up symbols for the evaluation tables
-pl1, pl2 = symbols("pl1, pl2")
-pi1, pi2 = symbols("pi1, pi2")
-pv1, pv2 = symbols("pv1, pv2")
-pj1, pj2 = symbols("pj1, pj2")
-pu1, pu2 = symbols("pu1, pu2")
-pk1, pk2 = symbols("pk1, pk2")
+pl = symbols("pl1, pl2")
+pi = symbols("pi1, pi2")
+pv = symbols("pv1, pv2")
+pj = symbols("pj1, pj2")
+pu = symbols("pu1, pu2")
+pk = symbols("pk1, pk2")
 
 # Compute the evaluation tables for each scheme
 print("Computing tables for Yap Lex...")
-pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "lex")
+pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTableSegmentOrderYap(pl, pi, pv, pj, pu, pk, "lex")
 
 print("Computing tables for Yap Total...")
-pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, "total")
+pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableSegmentOrderYap(pl, pi, pv, pj, pu, pk, "total")
 
 print("Computing tables for SoS...")
-pExpressionsSoS, eExpressionsSos = schemes.getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
+pExpressionsSoS, eExpressionsSoS = schemes.getEvaluationTableSegmentOrderSoS(pl, pi, pv, pj, pu, pk)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSoS = [utility.count_ops(p) for p in pExpressionsSoS]
-
-
-# for index in range(len(pExpressionsYapTotal)):
-    # print(f"Index: {index}")
-    # print(f"expression: {pExpressionsYapTotal[index]}")
-    # print(f"operations: {operationCountYapTotal[index]}")
-
-# print("\n\n")
-
-# for index in range(len(pExpressionsSoS)):
-    # print(f"Index: {index}")
-    # print(f"expression: {pExpressionsSoS[index]}")
-    # print(f"operations: {operationCountSoS[index]}")
-
-# exit()
-
+operationCountYapLex = [count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [count_ops(p) for p in pExpressionsYapTotal]
+operationCountSoS = [count_ops(p) for p in pExpressionsSoS]
 
 # Set up arrays to hold the results for each test
 signsYapL = []

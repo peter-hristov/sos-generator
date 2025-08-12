@@ -1,10 +1,15 @@
-from sympy import simplify, factor, collect, expand, IndexedBase
+# This code implements the symbolic perturbation scheme from the following paper Section 3.4
+# 
+# Alliez, P., Devillers, O. and Snoeyink, J., 2000. Removing degeneracies by perturbing the problem or perturbing the world. Reliable Computing, 6(1), pp.61-79.
 
-from . import predicates, utility
+from sympy import simplify, factor, collect 
+
+# Local imports
+from . import predicates 
+
 
 def perturbPointAlliez(p, e):
     return [p[0] + e * p[1], p[1] + (e**2) * p[0] + (e**3) * (p[0]**2 + p[1]**2)]
-
 
 
 def computeEvaluationTable(expression, e):
@@ -29,10 +34,6 @@ def computeEvaluationTable(expression, e):
             pExpression = factor(simplify(terms))
         else:
             pExpression = factor(simplify(collect(terms, e**index).coeff(e**index)))
-            
-
-
-
 
         # if (methods.count_ops(pExpression) == 0):
             # continue

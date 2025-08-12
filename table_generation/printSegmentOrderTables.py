@@ -1,6 +1,7 @@
-from sympy import symbols, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
+from sympy import symbols, count_ops, latex
 
-from . import schemes, utility
+# Local imports
+from . import schemes 
 
 # Set up symbols for the evaluation tables
 pl = symbols("pl1, pl2")
@@ -24,10 +25,10 @@ print("Computing tables for Alliez...")
 pExpressionsAlliez, eExpressionsAlliez = schemes.getEvaluationTableSegmentOrderAlliez(pl, pi, pv, pj, pu, pk)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSoS = [utility.count_ops(p) for p in pExpressionsSoS]
-operationCountAlliez = [utility.count_ops(p) for p in pExpressionsAlliez]
+operationCountYapLex = [count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [count_ops(p) for p in pExpressionsYapTotal]
+operationCountSoS = [count_ops(p) for p in pExpressionsSoS]
+operationCountAlliez = [count_ops(p) for p in pExpressionsAlliez]
 
 print("-------------------------------------------------------")
 print("Printing the table for Yap Lex...")

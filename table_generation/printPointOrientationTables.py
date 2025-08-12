@@ -1,8 +1,7 @@
-from sympy import symbols, latex  
+from sympy import symbols, count_ops, latex
 
 # Local imports
-from . import schemes, utility 
-
+from . import schemes 
 
 # Set up symbolic coordinates of the input points
 pi = symbols("pi1, pi2")
@@ -23,10 +22,10 @@ print("Computing tables for Alliez...")
 pExpressionsAlliez, eExpressionsAlliez = schemes.getEvaluationTablePointOrientationAlliez(pi, pj, pk)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
-operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
-operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
-operationCountSoS = [utility.count_ops(p) for p in pExpressionsSoS]
-operationCountAlliez = [utility.count_ops(p) for p in pExpressionsAlliez]
+operationCountYapLex = [count_ops(p) for p in pExpressionsYapLex]
+operationCountYapTotal = [count_ops(p) for p in pExpressionsYapTotal]
+operationCountSoS = [count_ops(p) for p in pExpressionsSoS]
+operationCountAlliez = [count_ops(p) for p in pExpressionsAlliez]
 
 
 print("-------------------------------------------------------")

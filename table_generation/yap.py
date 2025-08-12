@@ -1,6 +1,10 @@
-from sympy import diff
+# This code implements the symbolic perturbation scheme from the following paper
+# 
+# Yap, C.K., 1990. Symbolic treatment of geometric degeneracies. Journal of Symbolic Computation, 10(3-4), pp.349-370.
+
 import itertools
 
+from sympy import diff
 
 def all_partials_orderedTotal(f, vars, m):
     """

@@ -1,4 +1,4 @@
-from sympy import Matrix, expand, IndexedBase, Symbol
+from sympy import Matrix, expand 
 
 def orientationTest(p1, p2, p3):
     M = Matrix([
@@ -37,45 +37,41 @@ def parametrizeAndOrder(pl, pi, pv, pj, pu, pk):
     s1 = Matrix([pj[0] - pv[0], pj[1] - pv[1]])
     s2 = Matrix([pk[0] - pu[0], pk[1] - pu[1]])
 
-    # q1 = Matrix([pl1 - pv1, pl2 - pv2])
-    # q2 = Matrix([pl1 - pu1, pl2 - pu2])
-
     q1 = Matrix([pv[0] - pl[0], pv[1] - pl[1]])
     q2 = Matrix([pu[0] - pl[0], pu[1] - pl[1]])
 
     q1xs1 = Matrix([
-        q1.T.tolist()[0],  # convert row matrix to flat list
+        q1.T.tolist()[0],
         s1.T.tolist()[0]
     ]).det()
 
     q2xs2 = Matrix([
-        q2.T.tolist()[0],  # convert row matrix to flat list
+        q2.T.tolist()[0],
         s2.T.tolist()[0]
     ]).det()
 
     q1xr = Matrix([
-        q1.T.tolist()[0],  # convert row matrix to flat list
+        q1.T.tolist()[0],
         r.T.tolist()[0]
     ]).det()
 
     q2xr = Matrix([
-        q2.T.tolist()[0],  # convert row matrix to flat list
+        q2.T.tolist()[0],
         r.T.tolist()[0]
     ]).det()
 
     rxs1 = Matrix([
-        r.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0],
         s1.T.tolist()[0]
     ]).det()
 
     rxs2 = Matrix([
-        r.T.tolist()[0],  # convert row matrix to flat list
+        r.T.tolist()[0],
         s2.T.tolist()[0]
     ]).det()
 
 
-    return expand(q1xs1 * rxs2 - q2xs2 * rxs1)
-
+    return simplify(expand(q1xs1 * rxs2 - q2xs2 * rxs1))
 
 
 def dualizeAndOrient(pl, pi, pv, pj, pu, pk):

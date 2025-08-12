@@ -48,12 +48,12 @@ In all the following commands replace 100 with the number of iterations that you
 
 ### Point Orientation
 ```
-python3 -m synthetic_data_evaluation.testPointOrientationAll 100
+python3 -m synthetic_data_evaluation.testPointOrientation 100
 ```
 
 ### Segment Order
 ```
-python3 -m synthetic_data_evaluation.testSegmentOrderAll.py 100
+python3 -m synthetic_data_evaluation.testSegmentOrder 100
 ```
 
 

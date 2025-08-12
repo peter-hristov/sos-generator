@@ -1,12 +1,8 @@
-from sympy import (
-    simplify,
-    expand,
-    collect,
-    Indexed,
-)
+# This code implements the symbolic perturbation scheme from the following paper
+# 
+# Edelsbrunner, H. and Mücke, E.P., 1990. Simulation of simplicity: a technique to cope with degenerate cases in geometric algorithms. ACM Transactions on Graphics (tog), 9(1), pp.66-104.
 
-# If variables like p, e are IndexedBase or something similar, you might need:
-from sympy import IndexedBase, Symbol
+from sympy import simplify, expand, collect, Indexed
 
 def getEvaluationTable(expression, e, variables):
 
