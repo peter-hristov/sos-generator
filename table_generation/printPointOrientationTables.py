@@ -4,23 +4,23 @@ from sympy import symbols, latex
 from . import schemes, utility 
 
 
-# Set up symbols for the evaluation tables
-pi1, pi2 = symbols("pi1, pi2")
-pj1, pj2 = symbols("pj1, pj2")
-pk1, pk2 = symbols("pk1, pk2")
+# Set up symbolic coordinates of the input points
+pi = symbols("pi1, pi2")
+pj = symbols("pj1, pj2")
+pk = symbols("pk1, pk2")
 
 # Compute the evaluation tables for each scheme
 print("Computing tables for Yap Lex...")
-pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "lex")
+pExpressionsYapLex, eExpressionsYapLex = schemes.getEvaluationTablePointOrientationYap(pi, pj, pk, "lex")
 
 print("Computing tables for Yap Total...")
-pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, "total")
+pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTablePointOrientationYap(pi, pj, pk, "total")
 
 print("Computing tables for SoS...")
-pExpressionsSoS, eExpressionsSoS = schemes.getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2)
+pExpressionsSoS, eExpressionsSoS = schemes.getEvaluationTablePointOrientationSoS(pi, pj, pk)
 
 print("Computing tables for Alliez...")
-pExpressionsAlliez, eExpressionsAlliez = schemes.getEvaluationTablePointOrientationAlliez(pi1, pi2, pj1, pj2, pk1, pk2)
+pExpressionsAlliez, eExpressionsAlliez = schemes.getEvaluationTablePointOrientationAlliez(pi, pj, pk)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
 operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
