@@ -2,7 +2,7 @@ from sympy import simplify, factor, collect, expand, IndexedBase
 
 from . import predicates, utility
 
-def perturbPointAllienz(p, e):
+def perturbPointAlliez(p, e):
     return [p[0] + e * p[1], p[1] + (e**2) * p[0] + (e**3) * (p[0]**2 + p[1]**2)]
 
 

@@ -4,7 +4,7 @@ from sympy import symbols, IndexedBase, latex
 from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simplify, ccode, sign, Rational, latex
 
 # Local import
-from . import predicates, sos, yap, allienz
+from . import predicates, sos, yap, alliez
 
 
 
@@ -72,7 +72,7 @@ def getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu
 
 
 
-def getEvaluationTableSegmentOrderAllienz(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+def getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
 
     # Symbolic indexed bases
     p = IndexedBase('p')
@@ -177,27 +177,27 @@ def getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2):
 
 
 
-def getEvaluationTableSegmentOrderAllienz(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+def getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
     e = symbols('e')
-    pi = allienz.perturbPointAllienz([pi1, pi2], e)
-    pj = allienz.perturbPointAllienz([pj1, pj2], e)
-    pk = allienz.perturbPointAllienz([pk1, pk2], e)
-    pl = allienz.perturbPointAllienz([pl1, pl2], e)
-    pu = allienz.perturbPointAllienz([pu1, pu2], e)
-    pv = allienz.perturbPointAllienz([pv1, pv2], e)
+    pi = alliez.perturbPointAlliez([pi1, pi2], e)
+    pj = alliez.perturbPointAlliez([pj1, pj2], e)
+    pk = alliez.perturbPointAlliez([pk1, pk2], e)
+    pl = alliez.perturbPointAlliez([pl1, pl2], e)
+    pu = alliez.perturbPointAlliez([pu1, pu2], e)
+    pv = alliez.perturbPointAlliez([pv1, pv2], e)
 
     p = IndexedBase('p')
-    expression = expand(predicates.dualizeAndOrientAllienz(p, pl, pi, pv, pj, pu, pk))
+    expression = expand(predicates.dualizeAndOrientAlliez(p, pl, pi, pv, pj, pu, pk))
 
-    return allienz.computeEvaluationTable(expression, e)
+    return alliez.computeEvaluationTable(expression, e)
 
-def getEvaluationTablePointOrientationAllienz(pi1, pi2, pj1, pj2, pk1, pk2):
+def getEvaluationTablePointOrientationAlliez(pi1, pi2, pj1, pj2, pk1, pk2):
 
     e = symbols('e')
-    pi = allienz.perturbPointAllienz([pi1, pi2], e)
-    pj = allienz.perturbPointAllienz([pj1, pj2], e)
-    pk = allienz.perturbPointAllienz([pk1, pk2], e)
+    pi = alliez.perturbPointAlliez([pi1, pi2], e)
+    pj = alliez.perturbPointAlliez([pj1, pj2], e)
+    pk = alliez.perturbPointAlliez([pk1, pk2], e)
 
     p = IndexedBase('p')
     expression = predicates.orientationTest(p, pi, pj, pk)
-    return allienz.computeEvaluationTable(expression, e)
+    return alliez.computeEvaluationTable(expression, e)

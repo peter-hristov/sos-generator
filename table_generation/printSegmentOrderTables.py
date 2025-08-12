@@ -20,14 +20,14 @@ pExpressionsYapTotal, eExpressionsYapTotal = schemes.getEvaluationTableSegmentOr
 print("Computing tables for SoS...")
 pExpressionsSoS, eExpressionsSoS = schemes.getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
 
-print("Computing tables for Allienz...")
-pExpressionsAllienz, eExpressionsAllienz = schemes.getEvaluationTableSegmentOrderAllienz(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
+print("Computing tables for Alliez...")
+pExpressionsAlliez, eExpressionsAlliez = schemes.getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
 
 # Compute number of arithemtic operations for each row of the evaluation table for each scheme
 operationCountYapLex = [utility.count_ops(p) for p in pExpressionsYapLex]
 operationCountYapTotal = [utility.count_ops(p) for p in pExpressionsYapTotal]
 operationCountSoS = [utility.count_ops(p) for p in pExpressionsSoS]
-operationCountAllienz = [utility.count_ops(p) for p in pExpressionsAllienz]
+operationCountAlliez = [utility.count_ops(p) for p in pExpressionsAlliez]
 
 print("-------------------------------------------------------")
 print("Printing the table for Yap Lex...")
@@ -61,11 +61,11 @@ for index in range(len(pExpressionsSoS)):
 
 print("\n\n")
 print("-------------------------------------------------------")
-print("Printing the table for Allienz")
+print("Printing the table for Alliez")
 print("-------------------------------------------------------")
-for index in range(len(pExpressionsAllienz)):
+for index in range(len(pExpressionsAlliez)):
     print(f"Index       : {index}")
-    print(f"expression  : {latex(pExpressionsAllienz[index])}")
-    print(f"e-Term      : {latex(eExpressionsAllienz[index])}")
-    print(f"operations  : {operationCountAllienz[index]}")
+    print(f"expression  : {latex(pExpressionsAlliez[index])}")
+    print(f"e-Term      : {latex(eExpressionsAlliez[index])}")
+    print(f"operations  : {operationCountAlliez[index]}")
     print("")
