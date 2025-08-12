@@ -18,7 +18,7 @@ def computeEvaluationTable(expression, e):
     eExpressions = []
 
     # the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
-    for index in range(0, 20):
+    for index in range(0, 12):
 
         coefficient = e**index
 
