@@ -28,20 +28,20 @@ def orientationTestHomogenious4D(p1, p2, p3, p4):
 
     return M.det()
 
-def parametrizeAndOrder(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+def parametrizeAndOrder(pl, pi, pv, pj, pu, pk):
 
     # p_l -> p_i
-    r = Matrix([pi1 - pl1, pi2 - pl2])
+    r = Matrix([pi[0] - pl[0], pi[1] - pl[1]])
 
     # p_v -> p_j
-    s1 = Matrix([pj1 - pv1, pj2 - pv2])
-    s2 = Matrix([pk1 - pu1, pk2 - pu2])
+    s1 = Matrix([pj[0] - pv[0], pj[1] - pv[1]])
+    s2 = Matrix([pk[0] - pu[0], pk[1] - pu[1]])
 
     # q1 = Matrix([pl1 - pv1, pl2 - pv2])
     # q2 = Matrix([pl1 - pu1, pl2 - pu2])
 
-    q1 = Matrix([pv1 - pl1, pv2 - pl2])
-    q2 = Matrix([pu1 - pl1, pu2 - pl2])
+    q1 = Matrix([pv[0] - pl[0], pv[1] - pl[1]])
+    q2 = Matrix([pu[0] - pl[0], pu[1] - pl[1]])
 
     q1xs1 = Matrix([
         q1.T.tolist()[0],  # convert row matrix to flat list
@@ -78,37 +78,27 @@ def parametrizeAndOrder(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, p
 
 
 
-def dualizeAndOrient(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
-    # p_li
-    p_l = (pl1, pl2)
-    p_i = (pi1, pi2)
-
-    # p_vj
-    p_v = (pv1, pv2)
-    p_j = (pj1, pj2)
-    p_u = (pu1, pu2)
-    p_k = (pk1, pk2)
-
+def dualizeAndOrient(pl, pi, pv, pj, pu, pk):
 
     # p_li homogenious
     p_li = (
-        p_i[1] - p_l[1],
-        p_l[0] - p_i[0],
-        p_i[0] * p_l[1] - p_l[0] * p_i[1]
+        pi[1] - pl[1],
+        pl[0] - pi[0],
+        pi[0] * pl[1] - pl[0] * pi[1]
     )
 
     # p_vj homogenious
     p_vj = (
-        p_j[1] - p_v[1],
-        p_v[0] - p_j[0],
-        p_j[0] * p_v[1] - p_v[0] * p_j[1]
+        pj[1] - pv[1],
+        pv[0] - pj[0],
+        pj[0] * pv[1] - pv[0] * pj[1]
     )
 
     # p_uk
     p_uk = (
-        p_k[1] - p_u[1],
-        p_u[0] - p_k[0],
-        p_k[0] * p_u[1] - p_u[0] * p_k[1]
+        pk[1] - pu[1],
+        pu[0] - pk[0],
+        pk[0] * pu[1] - pu[0] * pk[1]
     )
 
     return orientationTestHomogenious(p_li, p_vj, p_uk)
