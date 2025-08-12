@@ -8,18 +8,15 @@ from sympy import (
 # If variables like p, e are IndexedBase or something similar, you might need:
 from sympy import IndexedBase, Symbol
 
-# Optional if you use any other SymPy features not shown here
-def getEvaluationTable(p, e, variables, expression):
-
-    # Unpack variables
-    i, j, k, l, u, v = variables
+def getEvaluationTable(expression, e, variables):
 
     expression = simplify(expand(expression))
     expressionTermsOrdered = expression.as_ordered_terms()
 
-    # print("Arranging terms into different levels...")
-    allTerms = []
+    # Break up the expression into terms and order them by the number of e-variables in them.
+    # 
     # the upper limit on the range is an arbitrary large number, the loops really is only supposed to stop when we break
+    allTerms = []
     for index in range(0, 1000000):
         terms = sum([
             t for t in expressionTermsOrdered
@@ -33,10 +30,9 @@ def getEvaluationTable(p, e, variables, expression):
 
         allTerms.append(terms)
 
-    pExpressions, eExpressions = computeEvaluationTable(allTerms, p, e, variables)
-    return pExpressions, eExpressions
+    return computeEvaluationTable(allTerms, e, variables)
 
-def computeEvaluationTable(allTerms, p, e, variableIndices):
+def computeEvaluationTable(allTerms, e, variableIndices):
     depth = 0
     pExpressions = [allTerms[0]]
     eExpressions = [[]]
@@ -44,12 +40,11 @@ def computeEvaluationTable(allTerms, p, e, variableIndices):
 
     for line in seq:
         for eProduct in line:
+
             num_factors = len(eProduct.args) if eProduct.is_Mul else 1
 
             if (num_factors > len(allTerms) - 1):
                 continue
-
-            # # print(num_factors)
 
             collectionTerm = eProduct
             collectionExpression = allTerms[num_factors]
@@ -117,31 +112,31 @@ def count_indexed_with_base(term, base):
 
 
 
-def generate_sequence(e, variableIndices, dimensions=(1, 2)):
+def generate_sequence(e, variables, dimensions=(1, 2)):
 
     # Sort the indies of all variables
-    # variableIndices = sorted(variableIndices)
+    # variables = sorted(variables)
 
     sequence = []
-    # sequence.append([f"e[{variableIndices[0]}, {dimensions[1]}]", f"e[{variableIndices[0]}, {dimensions[0]}]"])
+    # sequence.append([f"e[{variables[0]}, {dimensions[1]}]", f"e[{variables[0]}, {dimensions[0]}]"])
 
     firstRow = []
     for j in reversed(range(len(dimensions))):
-        firstRow.append(e[variableIndices[0], dimensions[j]])
+        firstRow.append(e[variables[0], dimensions[j]])
 
     sequence.append(firstRow)
-    # sequence.append([e[variableIndices[0], dimensions[1]], e[variableIndices[0], dimensions[0]]])
+    # sequence.append([e[variables[0], dimensions[1]], e[variables[0], dimensions[0]]])
 
-    for i in range(1, len(variableIndices)):
+    for i in range(1, len(variables)):
         currentSequence = []
         for j in reversed(range(len(dimensions))):
-            # currentSequence.append(f"e[{variableIndices[i]}, {dimensions[j]}]")
-            currentSequence.append(e[variableIndices[i], dimensions[j]])
+            # currentSequence.append(f"e[{variables[i]}, {dimensions[j]}]")
+            currentSequence.append(e[variables[i], dimensions[j]])
             for s in range(len(sequence)):
                 previousSequence = sequence[s]
                 for k in range(len(previousSequence)):
-                    # appendString = f"e[{variableIndices[i]}, {dimensions[j]}]"
-                    appendProduct = e[variableIndices[i], dimensions[j]] * previousSequence[k]
+                    # appendString = f"e[{variables[i]}, {dimensions[j]}]"
+                    appendProduct = e[variables[i], dimensions[j]] * previousSequence[k]
                     # if previousSequence[k] != "":
                     # appendProduct *= previousSequence[k]
                     currentSequence.append(appendProduct)

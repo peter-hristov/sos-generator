@@ -6,134 +6,11 @@ from sympy import symbols, Matrix, collect, expand, IndexedBase, Indexed, simpli
 # Local import
 from . import predicates, sos, yap, alliez
 
-
-
-def getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, orderingType):
-
-    expression = predicates.dualizeAndOrientYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
-    # expression = predicates.parametrizeAndOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
-
-    # The 3 here is hardcoded because it is enough for the segment order predicate
-
-    if (orderingType == 'total'):
-        pExpressions, eExpressions = yap.all_partials_orderedTotal(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
-    elif (orderingType == 'lex'):
-        pExpressions, eExpressions = yap.all_partials_orderedLex(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
-
-    # Filter out the zero expressions
-    pExpressionsNonZero = []
-    eExpressionsNonZero = []
-
-    for pExpression, eExpression in zip(pExpressions, eExpressions):
-        if not pExpression.is_zero:
-            pExpressionsNonZero.append(pExpression)
-            eExpressionsNonZero.append(eExpression)
-
-            if pExpression.is_constant():
-                break
-
-    return pExpressionsNonZero, eExpressionsNonZero 
-
-
-def getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
-
-    # Symbolic indexed bases
-    p = IndexedBase('p')
-    e = IndexedBase('e')
-
-    # Symbolic variables for the indices
-    variables = symbols("i j k l u v")
-    i, j, k, l, u, v = variables
-
-    # print("Computing tables for SoS")
-
-    det = predicates.dualizeAndOrient(p, e, variables)
-    pExpressionsSos, eExpressionsSos = sos.getEvaluationTable(p, e, variables, det)
-
-    # Replace the indexed base with symbols which can be evaluated
-    replacements = {
-        p[l, 1]: pl1,
-        p[l, 2]: pl2,
-        p[i, 1]: pi1,
-        p[i, 2]: pi2,
-        p[v, 1]: pv1,
-        p[v, 2]: pv2,
-        p[j, 1]: pj1,
-        p[j, 2]: pj2,
-        p[u, 1]: pu1,
-        p[u, 2]: pu2,
-        p[k, 1]: pk1,
-        p[k, 2]: pk2,
-    }
-
-    pExpressionsSoS_substituted = [expr.subs(replacements) for expr in pExpressionsSos]
-
-    return pExpressionsSoS_substituted, eExpressionsSos
-
-
-
-def getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
-
-    # Symbolic indexed bases
-    p = IndexedBase('p')
-    e = IndexedBase('e')
-
-    # Symbolic variables for the indices
-    variables = symbols("i j k l u v")
-    i, j, k, l, u, v = variables
-
-    # print("Computing tables for SoS")
-
-    det = predicates.dualizeAndOrient(p, e, variables)
-    pExpressionsSos, eExpressionsSos = sos.getEvaluationTable(p, e, variables, det)
-
-    # Replace the indexed base with symbols which can be evaluated
-    replacements = {
-        p[l, 1]: pl1,
-        p[l, 2]: pl2,
-        p[i, 1]: pi1,
-        p[i, 2]: pi2,
-        p[v, 1]: pv1,
-        p[v, 2]: pv2,
-        p[j, 1]: pj1,
-        p[j, 2]: pj2,
-        p[u, 1]: pu1,
-        p[u, 2]: pu2,
-        p[k, 1]: pk1,
-        p[k, 2]: pk2,
-    }
-
-    pExpressionsSoS_substituted = [expr.subs(replacements) for expr in pExpressionsSos]
-
-    return pExpressionsSoS_substituted, eExpressionsSos
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, orderingType):
 
-    expression = predicates.orientationTestYap([pi1, pi2], [pj1, pj2], [pk1, pk2])
+    expression = predicates.orientationTest([pi1, pi2], [pj1, pj2], [pk1, pk2])
 
-    # print(f"The expressions is {expression}")
-
-    # The 3 here is hardcoded because it is enough for the segment order predicate
-
+    # The depth 3 here is hardcoded because it is enough for the segment order predicate
     if (orderingType == 'total'):
         pExpressions, eExpressions = yap.all_partials_orderedTotal(expression, [pi1, pi2, pj1, pj2, pk1, pk2], 3)
     elif (orderingType == 'lex'):
@@ -154,30 +31,84 @@ def getEvaluationTablePointOrientationYap(pi1, pi2, pj1, pj2, pk1, pk2, ordering
 
     return pExpressionsNonZero, eExpressionsNonZero 
 
+def getEvaluationTableSegmentOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2, orderingType):
+
+    expression = predicates.dualizeAndOrient(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
+    # expression = predicates.parametrizeAndOrderYap(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2)
+
+    # The 3 here is hardcoded because it is enough for the segment order predicate
+    if (orderingType == 'total'):
+        pExpressions, eExpressions = yap.all_partials_orderedTotal(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
+    elif (orderingType == 'lex'):
+        pExpressions, eExpressions = yap.all_partials_orderedLex(expression, [pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2], 4)
+
+    # Filter out the zero expressions
+    pExpressionsNonZero = []
+    eExpressionsNonZero = []
+
+    for pExpression, eExpression in zip(pExpressions, eExpressions):
+        if not pExpression.is_zero:
+            pExpressionsNonZero.append(pExpression)
+            eExpressionsNonZero.append(eExpression)
+
+            if pExpression.is_constant():
+                break
+
+    return pExpressionsNonZero, eExpressionsNonZero 
+
+
+
 
 def getEvaluationTablePointOrientationSoS(pi1, pi2, pj1, pj2, pk1, pk2):
 
-    # Symbolic indexed bases
-    p = IndexedBase('p')
+    # Set up the perturbed expression
     e = IndexedBase('e')
-
-    # Symbolic variables for the indices
-    variables = symbols("i j k l u v")
-    i, j, k, l, u, v = variables
+    i, j, k = symbols("i j k")
 
     # The expression
-    det = predicates.orientationTest(p,
+    perturbedExpression = predicates.orientationTest(
             (pi1 + e[i, 1], pi2 + e[i, 2]), 
             (pj1 + e[j, 1], pj2 + e[j, 2]), 
             (pk1 + e[k, 1], pk2 + e[k, 2])
             )
 
-    return sos.getEvaluationTable(p, e, variables, det)
+    return sos.getEvaluationTable(perturbedExpression, e, [i, j, k])
+
+def getEvaluationTableSegmentOrderSoS(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+
+    # Set up the perturbed expression
+    e = IndexedBase('e')
+    i, j, k, l, u, v = symbols("i j k l u v")
+
+    perturbedExpression = predicates.dualizeAndOrient(
+            pl1 + e[l, 1], pl2 + e[l, 2], 
+            pi1 + e[i, 1], pi2 + e[i, 2], 
+            pv1 + e[v, 1], pv2 + e[v, 2], 
+            pj1 + e[j, 1], pj2 + e[j, 2], 
+            pu1 + e[u, 1], pu2 + e[u, 2], 
+            pk1 + e[k, 1], pk2 + e[k, 2]
+            )
+
+    return sos.getEvaluationTable(perturbedExpression, e, [i, j, k, l, u, v])
 
 
+
+
+def getEvaluationTablePointOrientationAlliez(pi1, pi2, pj1, pj2, pk1, pk2):
+
+    # Set up the perturbed expression
+    e = symbols('e')
+    pi = alliez.perturbPointAlliez([pi1, pi2], e)
+    pj = alliez.perturbPointAlliez([pj1, pj2], e)
+    pk = alliez.perturbPointAlliez([pk1, pk2], e)
+
+    perturbedExpression = predicates.orientationTest(pi, pj, pk)
+    return alliez.computeEvaluationTable(perturbedExpression, e)
 
 
 def getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2, pu1, pu2, pk1, pk2):
+
+    # Set up the perturbed expression
     e = symbols('e')
     pi = alliez.perturbPointAlliez([pi1, pi2], e)
     pj = alliez.perturbPointAlliez([pj1, pj2], e)
@@ -186,18 +117,5 @@ def getEvaluationTableSegmentOrderAlliez(pl1, pl2, pi1, pi2, pv1, pv2, pj1, pj2,
     pu = alliez.perturbPointAlliez([pu1, pu2], e)
     pv = alliez.perturbPointAlliez([pv1, pv2], e)
 
-    p = IndexedBase('p')
-    expression = expand(predicates.dualizeAndOrientAlliez(p, pl, pi, pv, pj, pu, pk))
-
-    return alliez.computeEvaluationTable(expression, e)
-
-def getEvaluationTablePointOrientationAlliez(pi1, pi2, pj1, pj2, pk1, pk2):
-
-    e = symbols('e')
-    pi = alliez.perturbPointAlliez([pi1, pi2], e)
-    pj = alliez.perturbPointAlliez([pj1, pj2], e)
-    pk = alliez.perturbPointAlliez([pk1, pk2], e)
-
-    p = IndexedBase('p')
-    expression = predicates.orientationTest(p, pi, pj, pk)
-    return alliez.computeEvaluationTable(expression, e)
+    perturbedExpression = expand(predicates.dualizeAndOrient(pl[0], pl[1], pi[0], pi[1], pv[0], pv[1], pj[0], pj[1], pu[0], pu[1], pk[0], pk[1]))
+    return alliez.computeEvaluationTable(perturbedExpression, e)
