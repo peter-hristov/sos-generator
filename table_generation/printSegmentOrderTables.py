@@ -36,6 +36,7 @@ print("-------------------------------------------------------")
 for index in range(len(pExpressionsYapLex)):
     print(f"Index       : {index}")
     print(f"expression  : {latex(pExpressionsYapLex[index])}")
+    print(f"terms       : {len(pExpressionsYapLex[index].as_ordered_terms())}")
     print(f"operations  : {operationCountYapLex[index]}")
     print("")
 
@@ -46,6 +47,7 @@ print("-------------------------------------------------------")
 for index in range(len(pExpressionsYapTotal)):
     print(f"Index       : {index}")
     print(f"expression  : {latex(pExpressionsYapTotal[index])}")
+    print(f"terms       : {len(pExpressionsYapTotal[index].as_ordered_terms())}")
     print(f"operations  : {operationCountYapTotal[index]}")
     print("")
 
@@ -57,6 +59,7 @@ for index in range(len(pExpressionsSoS)):
     print(f"Index       : {index}")
     print(f"expression  : {latex(pExpressionsSoS[index])}")
     print(f"e-Term      : {latex(eExpressionsSoS[index])}")
+    print(f"terms       : {len(pExpressionsSoS[index].as_ordered_terms())}")
     print(f"operations  : {operationCountSoS[index]}")
     print("")
 
@@ -68,5 +71,6 @@ for index in range(len(pExpressionsAlliez)):
     print(f"Index       : {index}")
     print(f"expression  : {latex(pExpressionsAlliez[index])}")
     print(f"e-Term      : {latex(eExpressionsAlliez[index])}")
+    print(f"terms       : {len(pExpressionsAlliez[index].as_ordered_terms())}")
     print(f"operations  : {operationCountAlliez[index]}")
     print("")

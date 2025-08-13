@@ -32,7 +32,7 @@ def evaluateTable(pExpressions, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, 
 
 def evaluate_iteration(iteration):
     # print(f"---------------------------------------------------------- At iteration {iteration}")
-    start = time.time()
+    # start = time.time()
 
     pl_c, pi_c, pv_c, pj_c, pu_c, pk_c = geometry.generateSegments((1, 1000))
 
@@ -40,7 +40,7 @@ def evaluate_iteration(iteration):
     signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c)
     signSoS, depthSoS = evaluateTable(pExpressionsSoS, pl, pi, pv, pj, pu, pk, pl_c, pi_c, pv_c, pj_c, pu_c, pk_c)
 
-    end = time.time()
+    # end = time.time()
     # print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
 
     return {
@@ -106,6 +106,7 @@ operationsSoS = []
 depthsHistogramSoS = defaultdict(int)
 
 
+start = time.time()
 
 # Run all tests in paralle
 with ProcessPoolExecutor() as executor:
@@ -127,6 +128,8 @@ for r in results:
     operationsSoS.append(sum(operationCountSoS[:r["depthSoS"]]))
     depthsHistogramSoS[r["depthSoS"]] += 1
 
+end = time.time()
+print(f"Time for expression sign evaluation : {end - start:.6f} seconds")
 
 # Output stats over all tests
 print("\n\n------------------------------------------------------------------- Yap Lex")
