@@ -60,11 +60,11 @@ operationCountSoS = [count_ops(p) for p in pExpressionsSoS]
 
 # Print for debugging purposes 
 # 
-for index in range(len(pExpressionsSoS)):
-    print(f"Index: {index}")
-    print(f"expression: {pExpressionsSoS[index]}")
-    print(f"e-Term: {eExpressionsSoS[index]}")
-    print(f"operations: {operationCountSoS[index]}")
+# for index in range(len(pExpressionsSoS)):
+    # print(f"Index: {index}")
+    # print(f"expression: {pExpressionsSoS[index]}")
+    # print(f"e-Term: {eExpressionsSoS[index]}")
+    # print(f"operations: {operationCountSoS[index]}")
 
 # for index in range(len(pExpressionsYapLex)):
     # print(f"Index: {index}")
