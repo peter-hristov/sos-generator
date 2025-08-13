@@ -100,7 +100,7 @@ for iteration in range(0, n):
     start = time.time()
 
     # Generate concurrent points
-    pi_c, pj_c, pk_c = geometry.generateColinearPoints((1, 1000000))
+    pi_c, pj_c, pk_c = geometry.generateColinearPoints((1, 1000))
 
     signYapL, depthYapL = evaluateTable(pExpressionsYapLex, pi, pj, pk, pi_c, pj_c, pk_c)
     signYapT, depthYapT = evaluateTable(pExpressionsYapTotal, pi, pj, pk, pi_c, pj_c, pk_c)
